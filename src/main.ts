@@ -63,6 +63,8 @@ new Vue({
         return h(App);
     },
     mounted() {
-        this.$router.push('/');
-      },
+        if (this.$route.path !== '/') {
+            this.$router.push('/');
+        }
+    },
 }).$mount('#app');

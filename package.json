@@ -22,7 +22,8 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "prepare": "husky"
   },
   "main": "background.js",
   "dependencies": {
@@ -65,9 +66,11 @@
     "@vue/cli-plugin-babel": "^5.0.0",
     "@vue/cli-plugin-typescript": "^5.0.0",
     "@vue/cli-service": "^5.0.0",
+    "@vue/eslint-config-typescript": "^11.0.3",
     "babel-loader": "^9.0.0",
     "electron": "^35.0.0",
     "electron-builder": "^25.0.0",
+    "electron-devtools-installer": "^4.0.0",
     "electron-icon-builder": "^2.0.1",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",

@@ -1,0 +1,3 @@
+# Run lint (disabled until existing issues are fixed)
+# npm run lint
+echo "Pre-commit hook: Consider running 'npm run lint' before pushing"

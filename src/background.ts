@@ -13,10 +13,8 @@ import {
     dialog,
     ipcMain,
 } from 'electron';
-import {
-    createProtocol,
-    installVueDevtools,
-} from 'vue-cli-plugin-electron-builder/lib';
+import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
+import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import * as Splashscreen from '@trodi/electron-splashscreen';
 import { join } from 'path';
 import { readFileSync } from 'fs';
@@ -24,6 +22,10 @@ import { get } from 'lodash-es';
 import * as defaultTranslations from './i18n/en';
 import { autoUpdater } from 'electron-updater';
 import marked from 'marked';
+import * as remoteMain from '@electron/remote/main';
+
+// Initialize @electron/remote
+remoteMain.initialize();
 
 const pkg = JSON.parse(
     readFileSync(
@@ -398,6 +400,8 @@ function createWindow() {
         icon: join(__static, '/icons/64x64.png'),
         webPreferences: {
             nodeIntegration: true,
+            contextIsolation: false,
+            enableRemoteModule: true,
         },
     };
 
@@ -413,6 +417,10 @@ function createWindow() {
 
     win = Splashscreen.initSplashScreen(config);
     win.setTitle('ETCD Manager');
+
+    // Enable @electron/remote for this window
+    remoteMain.enable(win.webContents);
+
     win.on('page-title-updated', (e) => {
         e.preventDefault();
     });
@@ -489,7 +497,7 @@ app.on('ready', async () => {
     if (isDevelopment && !process.env.IS_TEST) {
         // Install Vue Devtools
         try {
-            await installVueDevtools();
+            await installExtension(VUEJS_DEVTOOLS);
         } catch (e) {
             console.error('Vue Devtools failed to install:', String(e));
         }

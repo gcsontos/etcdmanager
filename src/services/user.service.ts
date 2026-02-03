@@ -1,5 +1,5 @@
-import { DataService } from './../../types/index';
 import { Etcd3, User, Role } from 'etcd3';
+import { DataService } from '../../types/index';
 import EtcdService from './etcd.service';
 
 export default class UserService extends EtcdService implements DataService {
@@ -14,7 +14,6 @@ export default class UserService extends EtcdService implements DataService {
     private getUser(name: string): User {
         return this.client.user(name);
     }
-
 
     public getUserRoles(name: string): Promise<Role[]> {
         const user = this.getUser(name);
@@ -40,9 +39,7 @@ export default class UserService extends EtcdService implements DataService {
     public async purge(): Promise<any> {
         try {
             const userObjs = await this.getUsers();
-            const userNames = userObjs.map((user: User) => {
-                return user.name;
-            });
+            const userNames = userObjs.map((user: User) => user.name);
             return Promise.resolve(this.remove(userNames));
         } catch (error) {
             return Promise.reject([error]);

@@ -96,7 +96,6 @@ import { AuthService } from '../services/auth.service';
     },
 })
 export default class Menu extends Vue {
-
     public authService: AuthService;
 
     constructor() {

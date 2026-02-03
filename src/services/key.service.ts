@@ -1,21 +1,19 @@
-import { AuthService } from './auth.service';
 import store from '@/store';
+import { MultiRangeBuilder, Etcd3, DeleteBuilder } from 'etcd3';
+import { AuthService } from './auth.service';
 import {
     DataService,
     RevisionListType,
     GenericObject,
-} from './../../types/index';
-import { MultiRangeBuilder, Etcd3, DeleteBuilder } from 'etcd3';
+} from '../../types/index';
 import EtcdService from './etcd.service';
 
 export default class KeyService extends EtcdService implements DataService {
-
     private authService: AuthService;
 
     constructor(client?: Etcd3) {
         super(client);
         this.authService = new AuthService();
-
     }
 
     public async getRevisions(key: string): Promise<RevisionListType> {
@@ -73,23 +71,19 @@ export default class KeyService extends EtcdService implements DataService {
             }
         }
 
-
         return Promise.resolve(queries);
     }
 
     public async loadAllKeys(prefix?: string): Promise<any> {
-
         let queries: Promise<{ [key: string]: string; }>[] = [];
         let query: MultiRangeBuilder = this.client.getAll();
 
         if (!this.authService.isAuthenticated() || await this.authService.isRoot()) {
-
             if (prefix) {
                 query = query.prefix(prefix);
             }
 
             queries.push(query.strings());
-
         } else {
             queries = await this.mkAuthQueries();
         }
@@ -109,14 +103,14 @@ export default class KeyService extends EtcdService implements DataService {
         key: string,
         value: string,
         ttl: string,
-        isCreate: boolean = true
+        isCreate: boolean = true,
     ): Promise<any> {
         if (isCreate) {
-            const  ttlNum = parseInt(ttl, 10);
+            const ttlNum = parseInt(ttl, 10);
             const clientOrLease = ttlNum ? this.client.lease(ttlNum) : this.client;
 
             if (ttlNum) {
-                const  tid = setTimeout(() => {
+                const tid = setTimeout(() => {
                     clientOrLease.revoke();
                     clearTimeout(tid);
                 }, ttlNum * 1000);
@@ -129,12 +123,11 @@ export default class KeyService extends EtcdService implements DataService {
                 .commit();
         }
         return this.client.put(key)
-        .ignoreLease()
-        .value(value);
+            .ignoreLease()
+            .value(value);
     }
 
     public async purge(): Promise<any> {
-
         const builder = this.client.delete();
         let queries: Promise<{ [key: string]: string; }>[] = [];
 
@@ -145,7 +138,6 @@ export default class KeyService extends EtcdService implements DataService {
         }
 
         return Promise.all(queries);
-
     }
 
     private mkKeySet(keys: GenericObject[] | string[]): Set<string> {
@@ -178,7 +170,7 @@ export default class KeyService extends EtcdService implements DataService {
                 this.client
                     .delete()
                     .key(key)
-                    .exec()
+                    .exec(),
             );
         });
 

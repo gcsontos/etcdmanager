@@ -63,10 +63,10 @@
 
 <script lang='ts'>
 import Component from 'vue-class-component';
-import { GenericObject } from '../../types';
 import { required } from 'vuelidate/lib/validators';
-import { BaseEditor } from '../lib/editor.class';
 import { Prop } from 'vue-property-decorator';
+import { GenericObject } from '../../types';
+import { BaseEditor } from '../lib/editor.class';
 
 @Component({
     name: 'action-editor',
@@ -87,7 +87,7 @@ export default class ActionEditor extends BaseEditor {
 
     // @ts-ignore
     @Prop() data: {
-        id: Symbol;
+        id: symbol;
         action: GenericObject;
         event: GenericObject;
     };

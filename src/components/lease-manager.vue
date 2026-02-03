@@ -454,7 +454,7 @@ export default class LeaseManager extends CrudBase implements List {
     }
 
     public destroyed() {
-       super.destroyed();
+        super.destroyed();
     }
 
     public async editItem(item: GenericObject) {

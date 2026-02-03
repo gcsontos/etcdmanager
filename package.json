@@ -74,6 +74,7 @@
     "electron-icon-builder": "^2.0.1",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-vue": "^9.0.0",
     "husky": "^9.0.0",

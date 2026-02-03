@@ -271,14 +271,14 @@ import Component from 'vue-class-component';
 import { ILeaseTimeToLiveResponse } from 'etcd3';
 import { required, numeric } from 'vuelidate/lib/validators';
 import Messages from '@/lib/messages';
-import { BaseEditor } from '../lib/editor.class';
 import { Prop } from 'vue-property-decorator';
+import moment from 'moment';
+import { BaseEditor } from '../lib/editor.class';
 import LeaseService from '../services/lease.service';
 import { GenericObject } from '../../types';
-import moment from 'moment';
 
 // @ts-ignore
-class LeaseditorError extends Error {
+class _LeaseditorError extends Error {
     constructor(message: any) {
         super(message);
         this.name = 'LeaseEditorError';
@@ -318,7 +318,7 @@ export default class LeaseEditor extends BaseEditor {
     constructor() {
         super();
         this.leaseService = new LeaseService(
-            this.$store.state.connection.getClient()
+            this.$store.state.connection.getClient(),
         );
     }
 
@@ -329,22 +329,20 @@ export default class LeaseEditor extends BaseEditor {
         } catch (error) {
             this.$store.commit('message', Messages.error(String(error)));
         }
-        this.keys = this.lease.keys.map((key: Buffer) => {
-            return { name: key.toString() };
-        });
+        this.keys = this.lease.keys.map((key: Buffer) => ({ name: key.toString() }));
         this.remaining = this.lease.TTL;
         const now = moment();
         this.interval = setInterval(() => {
             this.remaining = this.remaining -= 1;
             const minutes = moment(now).diff(
                 moment(now).subtract(this.remaining, 'seconds'),
-                'minutes'
+                'minutes',
             );
             const hours = moment(now).diff(
                 moment(now).subtract(this.remaining, 'seconds'),
-                'hours'
+                'hours',
             );
-            this.remainingDate = `${hours} hours / ${minutes} minutes / ${this.remaining} seconds`
+            this.remainingDate = `${hours} hours / ${minutes} minutes / ${this.remaining} seconds`;
         }, 1000);
     }
 

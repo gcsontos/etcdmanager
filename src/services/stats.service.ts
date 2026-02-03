@@ -2,7 +2,6 @@ import { Etcd3, AlarmAction, AlarmType } from 'etcd3';
 import EtcdService from './etcd.service';
 
 export default class StatsService extends EtcdService {
-
     constructor(client?: Etcd3) {
         super(client);
     }
@@ -23,5 +22,4 @@ export default class StatsService extends EtcdService {
     public getStats() {
         return this.client.maintenance.status();
     }
-
 }

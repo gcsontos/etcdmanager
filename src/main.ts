@@ -1,19 +1,21 @@
-import { ValidationError } from './lib/validation-error.class';
 import Vue from 'vue';
+import Vuetify from 'vuetify';
+import lang from '@/i18n/en';
+import VueI18n from 'vue-i18n';
+import Vuelidate from 'vuelidate';
+import { ValidationError } from './lib/validation-error.class';
 import App from './components/app.vue';
 import router from './router';
 import store from './store';
-const vueLocalStorage = require('vue-localstorage');
-import Vuetify from 'vuetify';
-import 'vuetify/dist/vuetify.min.css';
-import Vuelidate from 'vuelidate';
-import NoSelectionDialog from './components/no-selection.dialog.vue';
+
 import PurgeDialog from './components/purge.dialog.vue';
+import 'vuetify/dist/vuetify.min.css';
+import NoSelectionDialog from './components/no-selection.dialog.vue';
 import DeleteDialog from './components/delete.dialog.vue';
 import SaveAsDialog from './components/save-as.dialog.vue';
 import MessageDialog from './components/message.dialog.vue';
-import lang from '@/i18n/en';
-import VueI18n from 'vue-i18n';
+
+const vueLocalStorage = require('vue-localstorage');
 
 Vue.config.productionTip = false;
 Vue.config.devtools = true;
@@ -58,10 +60,9 @@ new Vue({
     router,
     store,
     validations: {},
-    render: (h) => {
+    render: (h) =>
         //  @ts-ignore
-        return h(App);
-    },
+        h(App),
     mounted() {
         if (this.$route.path !== '/') {
             this.$router.push('/');

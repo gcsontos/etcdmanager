@@ -260,13 +260,13 @@
 
 <script lang="ts">
 import Component from 'vue-class-component';
+import Messages from '@/lib/messages';
 import { WatcherEntry, GenericObject } from '../../types';
 import WatcherService from '../services/watcher.service';
 import { CrudBase, List } from '../lib/crud.class';
 import WatcherEditor from './watcher-editor.vue';
-import Messages from '@/lib/messages';
 
-class WatcherManagerError extends Error {
+class _WatcherManagerError extends Error {
     constructor(message: any) {
         super(message);
         this.name = 'WatcherManagerError';
@@ -305,7 +305,7 @@ export default class WatcherManager extends CrudBase implements List {
         this.etcd = new WatcherService(
             // @ts-ignore
             this.$ls,
-            this.$store.state.connection.getClient()
+            this.$store.state.connection.getClient(),
         );
     }
 
@@ -320,14 +320,14 @@ export default class WatcherManager extends CrudBase implements List {
         this.translateHeaders(
             'watcherManager.columns.name',
             'watcherManager.columns.key',
-            'watcherManager.columns.prefix'
+            'watcherManager.columns.prefix',
         );
     }
 
     private async deactivateWatcher(
-        watcher: WatcherEntry
+        watcher: WatcherEntry,
     ): Promise<WatcherManager | WatcherManagerError> {
-        const listeners = this.$store.state.listeners;
+        const { listeners } = this.$store.state;
         const listener = listeners.get(watcher.name);
         if (listener) {
             try {
@@ -342,7 +342,7 @@ export default class WatcherManager extends CrudBase implements List {
     }
 
     public async activateWatcher(
-        watcher: WatcherEntry
+        watcher: WatcherEntry,
     ): Promise<WatcherManager | WatcherManagerError> {
         try {
             await this.etcd.activateWatcher(watcher);
@@ -354,7 +354,7 @@ export default class WatcherManager extends CrudBase implements List {
     }
 
     private async unregisterWatchers(
-        toBeRemoved: string[]
+        toBeRemoved: string[],
     ): Promise<WatcherManager | WatcherManagerError> {
         try {
             for (const watcherName of toBeRemoved) {
@@ -415,7 +415,7 @@ export default class WatcherManager extends CrudBase implements List {
             this.noSelection = false;
             const watcherNames = this.getSelectedKeys('name');
             for (const name of watcherNames) {
-                const watcher = this.watchers.find(w => w.name === name);
+                const watcher = this.watchers.find((w) => w.name === name);
                 if (watcher && watcher.activated) {
                     await this.deactivateWatcher(watcher as WatcherEntry);
                 } else {
@@ -457,7 +457,6 @@ export default class WatcherManager extends CrudBase implements List {
         };
         return Promise.resolve(this);
     }
-
 }
 </script>
 

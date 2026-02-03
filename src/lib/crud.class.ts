@@ -1,11 +1,12 @@
-import { ClipboardService } from './../services/clipboard.service';
-import { PlatformService } from './../services/platform.service';
 import Vue from 'vue';
-import { GenericObject } from './../../types/index';
 import EtcdService from '@/services/etcd.service';
 import Component from 'vue-class-component';
 import store from '@/store';
 import Mousetrap from 'mousetrap';
+import { GenericObject } from '../../types/index';
+import { PlatformService } from '../services/platform.service';
+import { ClipboardService } from '../services/clipboard.service';
+
 type ExtendedKeyboardEvent = Mousetrap.ExtendedKeyboardEvent;
 
 export interface List {
@@ -119,7 +120,7 @@ export class CrudBase extends Vue implements List {
     }
 
     // @ts-ignore
-    public editItem(item: GenericObject) {
+    public editItem(_item: GenericObject) {
         this.editor = true;
         this.operation = 'edit';
     }
@@ -208,16 +209,16 @@ export class CrudBase extends Vue implements List {
     }
 
     protected getSelectedKeys(
-        uniqueKey: string = 'key'
+        uniqueKey: string = 'key',
     ): GenericObject[] | string[] {
         if (this.selected[0].original) {
             return this.selected;
         }
-        return this.selected.map(item => item[uniqueKey]);
+        return this.selected.map((item) => item[uniqueKey]);
     }
 
     // @ts-ignore
-    public async load(...args: any): Promise<CrudBase> {
+    public async load(..._args: any): Promise<CrudBase> {
         return Promise.resolve(this);
     }
 
@@ -225,7 +226,7 @@ export class CrudBase extends Vue implements List {
         if (store.state.loading) {
             setTimeout(() => {
                 store.commit('loading');
-            },         500);
+            }, 500);
         } else {
             store.commit('loading');
         }

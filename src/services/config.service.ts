@@ -1,9 +1,9 @@
-import { AuthService } from './auth.service';
-import { LocalStorageService } from './local-storage.service';
 import store from '@/store';
-import { GenericObject } from './../../types/index';
 import { omit } from 'lodash-es';
 import { ipcRenderer } from 'electron';
+import { AuthService } from './auth.service';
+import { LocalStorageService } from './local-storage.service';
+import { GenericObject } from '../../types/index';
 
 export class ConfigService {
     constructor(private localStorageService: LocalStorageService) {}
@@ -58,7 +58,7 @@ export class ConfigService {
 
         if (cfg && cfg.profiles) {
             cfg.profiles = cfg.profiles.filter(
-                (conf: any) => conf.config.name !== profile
+                (conf: any) => conf.config.name !== profile,
             );
         }
 
@@ -84,15 +84,15 @@ export class ConfigService {
         }
 
         if (config.credentials && config.credentials.rootCertificate) {
-            config.credentials.rootCertificate = new Buffer(
-                config.credentials.rootCertificate
+            config.credentials.rootCertificate = Buffer.from(
+                config.credentials.rootCertificate,
             );
             if (config.credentials.privateKey && config.credentials.certChain) {
-                config.credentials.privateKey = new Buffer(
-                    config.credentials.privateKey
+                config.credentials.privateKey = Buffer.from(
+                    config.credentials.privateKey,
                 );
-                config.credentials.certChain = new Buffer(
-                    config.credentials.certChain
+                config.credentials.certChain = Buffer.from(
+                    config.credentials.certChain,
                 );
             }
         }

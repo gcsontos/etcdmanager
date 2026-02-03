@@ -217,9 +217,9 @@
 
 <script lang="ts">
 import Component from 'vue-class-component';
+import Messages from '@/lib/messages';
 import { CrudBase, List } from '../lib/crud.class';
 import UserService from '../services/user.service';
-import Messages from '@/lib/messages';
 import { GenericObject, EtcdUser } from '../../types';
 import UserEditor from './user-editor.vue';
 
@@ -284,9 +284,9 @@ export default class UserManager extends CrudBase implements List {
     public async confirmDelete(): Promise<UserManager> {
         try {
             // @ts-ignore
-            const result = await CrudBase.options.methods.confirmDelete.call(
+            await CrudBase.options.methods.confirmDelete.call(
                 this,
-                'name'
+                'name',
             );
             this.$store.commit('message', Messages.success());
         } catch (error) {

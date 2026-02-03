@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import Menu from './menu.vue';
 import { ipcRenderer, IpcRendererEvent } from 'electron';
+import Menu from './menu.vue';
 import WatcherService from '../services/watcher.service';
 import { GenericObject } from '../../types';
 import { LocalStorageService } from '../services/local-storage.service';
@@ -9,6 +9,7 @@ import { ConfigService } from '../services/config.service';
 import WhatsNewDialog from './whatsnew.dialog.vue';
 import Messages from '../lib/messages';
 import StatsService from '../services/stats.service';
+
 const { app } = require('@electron/remote');
 
 @Component({
@@ -48,10 +49,8 @@ export default class App extends Vue {
         this.$store.commit('package');
 
         this.whatsNew = !this.localStorageService.getRaw(
-            `news${app.getVersion()}`
+            `news${app.getVersion()}`,
         );
-
-
     }
 
     get currentProfile() {
@@ -90,7 +89,7 @@ export default class App extends Vue {
         const watcherService = new WatcherService(
             // @ts-ignore
             this.$ls,
-            this.$store.state.connection.getClient()
+            this.$store.state.connection.getClient(),
         );
         const watchers = watcherService.listWatchers();
         for (const watcherEntry of watchers) {
@@ -117,7 +116,7 @@ export default class App extends Vue {
             replaceConfig(config);
             ipcRenderer.send(
                 'appconfig',
-                JSON.stringify(this.configService.getConfig())
+                JSON.stringify(this.configService.getConfig()),
             );
         }
 
@@ -133,17 +132,16 @@ export default class App extends Vue {
             (_event: IpcRendererEvent, message: string) => {
                 this.$store.commit(
                     'message',
-                    Messages.error(this.$t(message).toString())
+                    Messages.error(this.$t(message).toString()),
                 );
-            }
+            },
         );
 
         this.statsService = new StatsService(this.$store.state.connection.getClient());
         const stats = await this.statsService.getStats();
 
-        this.$store.commit('etcdConfig', {version: parseFloat(stats.version) });
-        ipcRenderer.send('update-menu', undefined, { lease: this.$store.state.etcd.version > 3.2});
-
+        this.$store.commit('etcdConfig', { version: parseFloat(stats.version) });
+        ipcRenderer.send('update-menu', undefined, { lease: this.$store.state.etcd.version > 3.2 });
     }
 }
 </script>

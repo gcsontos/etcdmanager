@@ -1,4 +1,3 @@
-import { GenericObject, DataService } from './../../types/index';
 import {
     Etcd3,
     Role,
@@ -6,6 +5,7 @@ import {
     IPermissionRequest,
     Range,
 } from 'etcd3';
+import { GenericObject, DataService } from '../../types/index';
 import EtcdService from './etcd.service';
 
 export default class RoleService extends EtcdService implements DataService {
@@ -58,8 +58,8 @@ export default class RoleService extends EtcdService implements DataService {
 
     public async setPermissions(
         options: GenericObject,
-        isCreate: boolean = true
-    ): Promise<Role | Boolean> {
+        isCreate: boolean = true,
+    ): Promise<Role | boolean> {
         let permissionReq: IPermissionRequest = {
             permission: options.permission,
             key: options.key,

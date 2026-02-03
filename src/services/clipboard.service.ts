@@ -9,15 +9,15 @@ export class ClipboardService {
             () => {
                 store.commit(
                     'message',
-                    Messages.success('common.messages.copyClipboardSuccess')
+                    Messages.success('common.messages.copyClipboardSuccess'),
                 );
             },
             () => {
                 store.commit(
                     'message',
-                    Messages.error('common.messages.copyClipboardError')
+                    Messages.error('common.messages.copyClipboardError'),
                 );
-            }
+            },
         );
     }
 }

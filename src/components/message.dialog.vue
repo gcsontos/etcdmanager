@@ -22,7 +22,6 @@
     </v-dialog>
 </template>
 
-
 <script lang="ts">
 import Component from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
@@ -34,11 +33,11 @@ import Dialog from '../lib/dialog.class';
 export default class MessageDialog extends Dialog {
     // @ts-ignore
     @Prop() open: boolean = false;
-      // @ts-ignore
+    // @ts-ignore
     @Prop() title: string;
-      // @ts-ignore
+    // @ts-ignore
     @Prop() text: string;
-      // @ts-ignore
+    // @ts-ignore
     @Prop() okText: string;
 
     get isOpen() {

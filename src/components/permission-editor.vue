@@ -142,16 +142,16 @@
 
 <script lang='ts'>
 import Component from 'vue-class-component';
-import { GenericObject, PermissionObject } from '../../types';
 import { requiredIf, alphaNum } from 'vuelidate/lib/validators';
 import Messages from '@/lib/messages';
+import { Prop } from 'vue-property-decorator';
+import { GenericObject, PermissionObject } from '../../types';
 import { BaseEditor } from '../lib/editor.class';
 import RoleService from '../services/role.service';
-import { Prop } from 'vue-property-decorator';
 import { ValidationError } from '../lib/validation-error.class';
 
 // @ts-ignore
-class PermissionEditorError extends Error {
+class _PermissionEditorError extends Error {
     constructor(message: any) {
         super(message);
         this.name = 'RoleEditorError';
@@ -163,9 +163,7 @@ class PermissionEditorError extends Error {
     validations: {
         key: {
             alphaNum,
-            required: requiredIf((model) => {
-                return model.radios !== 'all';
-            }),
+            required: requiredIf((model) => model.radios !== 'all'),
         },
     },
 })
@@ -259,7 +257,7 @@ export default class PermissionEditor extends BaseEditor {
                     isAll: this.radios === 'all',
                     grant: true,
                 },
-                this.createMode
+                this.createMode,
             );
             this.toggleLoading();
             this.$emit('permission');
@@ -271,8 +269,8 @@ export default class PermissionEditor extends BaseEditor {
                     'message',
                     Messages.error(
                         'permissionEditor.messages.duplicateKey',
-                        true
-                    )
+                        true,
+                    ),
                 );
             } else {
                 this.$store.commit('message', Messages.error(String(e)));

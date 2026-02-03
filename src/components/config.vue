@@ -1296,6 +1296,9 @@ import {
     url,
 } from 'vuelidate/lib/validators';
 import { omit } from 'lodash-es';
+import { Etcd3, IOptions } from 'etcd3';
+import { writeFileSync } from 'fs';
+import Mousetrap from 'mousetrap';
 import { InputActionService } from '../services/input-action.service';
 import { LocalStorageService } from '../services/local-storage.service';
 import { PlatformService } from '../services/platform.service';
@@ -1303,11 +1306,9 @@ import Messages from '../lib/messages';
 import KeyService from '../services/key.service';
 import { GenericObject } from '../../types';
 import { ConfigService } from '../services/config.service';
-import { Etcd3, IOptions } from 'etcd3';
 import { AuthService } from '../services/auth.service';
 import StatsService from '../services/stats.service';
-import { writeFileSync } from 'fs';
-import Mousetrap from 'mousetrap';
+
 type ExtendedKeyboardEvent = Mousetrap.ExtendedKeyboardEvent;
 
 const { ipcRenderer } = require('electron');
@@ -1400,9 +1401,9 @@ export default class Configuration extends Vue {
 
     constructor() {
         super();
-        this.certification = new Buffer('');
-        this.privateKey = new Buffer('');
-        this.certificationChain = new Buffer('');
+        this.certification = Buffer.from('');
+        this.privateKey = Buffer.from('');
+        this.certificationChain = Buffer.from('');
         this.platformService = new PlatformService();
         this.inputActionService = new InputActionService();
         // @ts-ignore
@@ -1426,7 +1427,7 @@ export default class Configuration extends Vue {
             (e: ExtendedKeyboardEvent) => {
                 e.preventDefault();
                 this.help = this.help === null ? 0 : null;
-            }
+            },
         );
         ipcRenderer.on('ssl_data', (_event: any, arg: any) => {
             if (arg.id === 'cert') {
@@ -1444,15 +1445,11 @@ export default class Configuration extends Vue {
         });
 
         ipcRenderer.on('app-config-data', (_event: any, saveTo: string) => {
-            try {
-                writeFileSync(
-                    saveTo,
-                    JSON.stringify(this.configService.getConfig()),
-                    { encoding: 'utf8' }
-                );
-            } catch (e) {
-                throw e;
-            }
+            writeFileSync(
+                saveTo,
+                JSON.stringify(this.configService.getConfig()),
+                { encoding: 'utf8' },
+            );
         });
 
         ipcRenderer.on('config-data', () => {
@@ -1769,7 +1766,7 @@ export default class Configuration extends Vue {
                 this.active = parseInt(this.$refs[i].$attrs.tab, 10);
                 this.$store.commit(
                     'message',
-                    Messages.error('settings.messages.error', true)
+                    Messages.error('settings.messages.error', true),
                 );
                 break;
             }
@@ -1779,26 +1776,26 @@ export default class Configuration extends Vue {
     public getHelp() {
         let key = '';
         switch (this.active) {
-            default:
-            case 0:
-                key = 'settings.help.profile';
-                break;
-            case 1:
-                key = 'settings.help.etcd';
-                break;
-            case 2:
-                key = 'settings.help.auth';
-                break;
-            case 3:
-                key = 'settings.help.watchers';
-                break;
+        default:
+        case 0:
+            key = 'settings.help.profile';
+            break;
+        case 1:
+            key = 'settings.help.etcd';
+            break;
+        case 2:
+            key = 'settings.help.auth';
+            break;
+        case 3:
+            key = 'settings.help.watchers';
+            break;
 
-            case 4:
-                key = 'settings.help.users';
-                break;
-            case 5:
-                key = 'settings.help.misc';
-                break;
+        case 4:
+            key = 'settings.help.users';
+            break;
+        case 5:
+            key = 'settings.help.misc';
+            break;
         }
 
         return this.platformService.getHelp(this.$t(key));
@@ -1841,7 +1838,7 @@ export default class Configuration extends Vue {
             this.testing = false;
             this.$store.commit(
                 'message',
-                Messages.success('settings.messages.connectSuccess')
+                Messages.success('settings.messages.connectSuccess'),
             );
         } catch (e) {
             this.testColor = 'error';
@@ -1858,7 +1855,7 @@ export default class Configuration extends Vue {
         this.configService.loadProfile(this.profile);
         this.$store.commit(
             'updateCurrentProfile',
-            this.configService.getProfile(this.profile)
+            this.configService.getProfile(this.profile),
         );
 
         await this.updateCurrentEtcdVersion();
@@ -1932,7 +1929,7 @@ export default class Configuration extends Vue {
 
     private async updateCurrentEtcdVersion() {
         const statsService = new StatsService(
-            this.$store.state.connection.getClient()
+            this.$store.state.connection.getClient(),
         );
         const stats = await statsService.getStats();
         const currentVersion = parseFloat(stats.version);
@@ -1954,19 +1951,18 @@ export default class Configuration extends Vue {
             return false;
         }
         const config = this.configService.getConfig();
-        const credentials =
-            config && config.credentials ? config.credentials : undefined;
-        if (credentials && new Buffer(credentials.rootCertificate).length > 0) {
-            this.certification = new Buffer(credentials.rootCertificate);
+        const credentials = config && config.credentials ? config.credentials : undefined;
+        if (credentials && Buffer.from(credentials.rootCertificate).length > 0) {
+            this.certification = Buffer.from(credentials.rootCertificate);
             if (
-                credentials &&
-                credentials.privateKey &&
-                credentials.certChain &&
-                new Buffer(credentials.privateKey).length > 0 &&
-                new Buffer(credentials.certChain).length > 0
+                credentials
+                && credentials.privateKey
+                && credentials.certChain
+                && Buffer.from(credentials.privateKey).length > 0
+                && Buffer.from(credentials.certChain).length > 0
             ) {
-                this.privateKey = new Buffer(credentials.privateKey);
-                this.certificationChain = new Buffer(credentials.certChain);
+                this.privateKey = Buffer.from(credentials.privateKey);
+                this.certificationChain = Buffer.from(credentials.certChain);
             }
         }
         const newConfig: { [key: string]: any } = {
@@ -2025,7 +2021,7 @@ export default class Configuration extends Vue {
         const oldConfig = this.configService.getConfig() || {};
         oldConfig.profiles = oldConfig.profiles || [];
         const profileIndex = oldConfig.profiles.findIndex(
-            (p: any) => p.config.name === newConfig.config.name
+            (p: any) => p.config.name === newConfig.config.name,
         );
         if (profileIndex === -1) {
             oldConfig.profiles.push(newConfig);
@@ -2060,7 +2056,7 @@ export default class Configuration extends Vue {
 
             this.$store.commit(
                 'limited',
-                this.authService.isAuthenticated() ? isRoot : true
+                this.authService.isAuthenticated() ? isRoot : true,
             );
 
             if (!this.authService.isAuthenticated()) {

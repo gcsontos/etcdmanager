@@ -1,6 +1,4 @@
 import { ClipboardService } from '@/services/clipboard.service';
-import { PlatformService } from './../services/platform.service';
-import { GenericObject } from './../../types/index';
 
 import Vue from 'vue';
 import Component from 'vue-class-component';
@@ -8,6 +6,9 @@ import { Prop } from 'vue-property-decorator';
 import { capitalize } from 'lodash-es';
 import store from '@/store';
 import Mousetrap from 'mousetrap';
+import { GenericObject } from '../../types/index';
+import { PlatformService } from '../services/platform.service';
+
 type ExtendedKeyboardEvent = Mousetrap.ExtendedKeyboardEvent;
 
 @Component({
@@ -100,11 +101,10 @@ export class BaseEditor extends Vue {
         if (store.state.loading) {
             setTimeout(() => {
                 store.commit('loading');
-            },         500);
+            }, 500);
         } else {
             store.commit('loading');
         }
-
     }
 
     protected submit() { }

@@ -10,7 +10,6 @@ import WatcherManager from './components/watcher_manager.vue';
 import About from './components/about.vue';
 import { isConfiguredGuard } from './guards/guards';
 
-
 Vue.use(Router);
 
 export default new Router({

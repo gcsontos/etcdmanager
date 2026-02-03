@@ -404,9 +404,7 @@ export default class RoleManager extends CrudBase implements List {
         this.loading = true;
         try {
             this.data = await this.etcd.getRoles();
-            this.data = this.data?.filter((row) => {
-                return row.name !== 'root';
-            });
+            this.data = this.data?.filter((row) => row.name !== 'root');
             this.loading = false;
         } catch (error) {
             this.$store.commit('message', Messages.error(String(error)));

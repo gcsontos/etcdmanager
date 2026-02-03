@@ -142,7 +142,6 @@
     </v-layout>
 </template>
 
-
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
@@ -186,7 +185,7 @@ export default class About extends Vue {
                     obj.email = data[2];
                 }
                 return obj;
-            }
+            },
         );
         return contributors;
     }

@@ -2,11 +2,12 @@ import { readFileSync } from 'fs';
 import { IOptions } from 'etcd3';
 import Vue from 'vue';
 import Vuex from 'vuex';
-import EtcdService from './services/etcd.service';
-import { i18n, loadedLang } from './main';
 import { join } from 'path';
 import VueI18n from 'vue-i18n';
+import EtcdService from './services/etcd.service';
+import { i18n, loadedLang } from './main';
 import { CurrentProfileType } from '../types';
+
 const { ipcRenderer } = require('electron');
 const { app } = require('@electron/remote');
 
@@ -147,16 +148,16 @@ export default new Vuex.Store({
                     join(
                         process.platform !== 'win32' ? '/' : '',
                         app.getAppPath(),
-                        'package.json'
-                    )
-                ).toString()
+                        'package.json',
+                    ),
+                ).toString(),
             );
         },
         watcher(state, payload) {
             if (payload.op === 'set') {
                 state.listeners = state.listeners.set(
                     payload.key,
-                    payload.listener
+                    payload.listener,
                 );
             } else if (payload.op === 'del') {
                 state.listeners.delete(payload.key);
@@ -171,7 +172,7 @@ export default new Vuex.Store({
         async locale(context, payload) {
             function setLanguage(
                 language: string,
-                translations: VueI18n.LocaleMessageObject
+                translations: VueI18n.LocaleMessageObject,
             ) {
                 i18n.locale = language;
                 document.querySelector('html')!.setAttribute('lang', language);
@@ -188,7 +189,7 @@ export default new Vuex.Store({
                     context.commit('config', { language: lang });
                 }
                 return Promise.resolve(
-                    setLanguage(lang, i18n.getLocaleMessage(lang))
+                    setLanguage(lang, i18n.getLocaleMessage(lang)),
                 );
             }
             return Promise.resolve(lang);

@@ -1,4 +1,5 @@
-import { GenericObject } from './../../types/index';
+import { GenericObject } from '../../types/index';
+
 export class LocalStorageService {
     private ls: any;
 
@@ -18,5 +19,4 @@ export class LocalStorageService {
         this.ls.set(key, JSON.stringify(data));
         return this;
     }
-
 }

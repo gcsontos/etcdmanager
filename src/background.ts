@@ -1,5 +1,4 @@
 'use strict';
-import { GenericObject } from './../types/index';
 
 import {
     app,
@@ -19,10 +18,11 @@ import * as Splashscreen from '@trodi/electron-splashscreen';
 import { join } from 'path';
 import { readFileSync } from 'fs';
 import { get } from 'lodash-es';
-import * as defaultTranslations from './i18n/en';
 import { autoUpdater } from 'electron-updater';
 import marked from 'marked';
 import * as remoteMain from '@electron/remote/main';
+import * as defaultTranslations from './i18n/en';
+import { GenericObject } from '../types/index';
 
 // Initialize @electron/remote
 remoteMain.initialize();
@@ -32,9 +32,9 @@ const pkg = JSON.parse(
         join(
             process.platform !== 'win32' ? '/' : '',
             app.getAppPath(),
-            'package.json'
-        )
-    ).toString()
+            'package.json',
+        ),
+    ).toString(),
 );
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const isMac = process.platform === 'darwin';
@@ -56,17 +56,14 @@ function loadWhatsNew() {
     win.webContents.send('whatsnew-data', marked(news));
 }
 
-function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
-    const menuRouter = (where: string) => {
-        return (_menuItem: any, window?: BaseWindow) => {
-            if (window && window instanceof BrowserWindow) {
-                window.webContents.send('navigate', where);
-            }
-        };
+function createAppMenu(inputTranslations: any, disabledMap: GenericObject = {}) {
+    const menuRouter = (where: string) => (_menuItem: any, window?: BaseWindow) => {
+        if (window && window instanceof BrowserWindow) {
+            window.webContents.send('navigate', where);
+        }
     };
 
-    // tslint:disable-next-line: no-parameter-reassignment
-    translations = translations || defaultTranslations.default.en;
+    const translations = inputTranslations || defaultTranslations.default.en;
 
     const template: MenuItemConstructorOptions[] = [
         {
@@ -77,7 +74,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'settings'],
-                        'Settings'
+                        'Settings',
                     ),
                     click: menuRouter('configure'),
                 },
@@ -86,7 +83,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(translations, ['appMenu', 'export'], 'Export'),
                     click: () => {
                         const saveTo = dialog.showSaveDialogSync({
-                            defaultPath: `etcd-manager-settings.json`,
+                            defaultPath: 'etcd-manager-settings.json',
                             properties: ['dontAddToRecent', 'createDirectory'],
                         } as any);
                         if (saveTo) {
@@ -144,15 +141,15 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                 },
                 ...(isMac
                     ? ([
-                          {
-                              role: 'pasteAndMatchStyle' as const,
-                              label: get(
-                                  translations,
-                                  ['appMenu', 'pasteAndMatchStyle'],
-                                  'Paste and match style'
-                              ),
-                          },
-                      ] as MenuItemConstructorOptions[])
+                        {
+                            role: 'pasteAndMatchStyle' as const,
+                            label: get(
+                                translations,
+                                ['appMenu', 'pasteAndMatchStyle'],
+                                'Paste and match style',
+                            ),
+                        },
+                    ] as MenuItemConstructorOptions[])
                     : []),
                 {
                     role: 'delete',
@@ -164,7 +161,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'selectAll'],
-                        'Select all'
+                        'Select all',
                     ),
                 },
             ],
@@ -175,23 +172,23 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
             submenu: [
                 ...(isDevelopment
                     ? ([
-                          {
-                              role: 'reload' as const,
-                              label: get(
-                                  translations,
-                                  ['appMenu', 'reload'],
-                                  'Reload'
-                              ),
-                          },
-                          {
-                              role: 'forceReload' as const,
-                              label: get(
-                                  translations,
-                                  ['appMenu', 'forcereload'],
-                                  'Force reload'
-                              ),
-                          },
-                      ] as MenuItemConstructorOptions[])
+                        {
+                            role: 'reload' as const,
+                            label: get(
+                                translations,
+                                ['appMenu', 'reload'],
+                                'Reload',
+                            ),
+                        },
+                        {
+                            role: 'forceReload' as const,
+                            label: get(
+                                translations,
+                                ['appMenu', 'forcereload'],
+                                'Force reload',
+                            ),
+                        },
+                    ] as MenuItemConstructorOptions[])
                     : []),
                 { type: 'separator' },
                 {
@@ -199,7 +196,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'resetzoom'],
-                        'Reset zoom'
+                        'Reset zoom',
                     ),
                 },
                 {
@@ -211,7 +208,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'zoomout'],
-                        'Zoom out'
+                        'Zoom out',
                     ),
                 },
                 { type: 'separator' },
@@ -220,21 +217,21 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'togglefullscreen'],
-                        'Toggle fullscreen'
+                        'Toggle fullscreen',
                     ),
                 },
                 { type: 'separator' },
                 ...(isDevelopment
                     ? ([
-                          {
-                              role: 'toggleDevTools' as const,
-                              label: get(
-                                  translations,
-                                  ['appMenu', 'toggledevtools'],
-                                  'Toggle DevTools'
-                              ),
-                          },
-                      ] as MenuItemConstructorOptions[])
+                        {
+                            role: 'toggleDevTools' as const,
+                            label: get(
+                                translations,
+                                ['appMenu', 'toggledevtools'],
+                                'Toggle DevTools',
+                            ),
+                        },
+                    ] as MenuItemConstructorOptions[])
                     : []),
             ],
         },
@@ -248,7 +245,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'settings'],
-                        'Settings'
+                        'Settings',
                     ),
                     accelerator: 'CommandOrControl+Alt+S',
                     click: menuRouter('configure'),
@@ -267,7 +264,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'watchers'],
-                        'Watchers'
+                        'Watchers',
                     ),
                     accelerator: 'CommandOrControl+Alt+W',
                     click: menuRouter('watchers'),
@@ -299,7 +296,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'reportBug'],
-                        'Report a bug'
+                        'Report a bug',
                     ),
                     accelerator: 'CommandOrControl+Alt+B',
                     click: () => {
@@ -314,62 +311,62 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
         // @ts-ignore
         isMac
             ? {
-                  label: app.getName(),
-                  submenu: [
-                      {
-                          role: 'about',
-                          label: get(
-                              translations,
-                              ['appMenu', 'about'],
-                              'About'
-                          ),
-                      },
-                      { type: 'separator' },
-                      {
-                          role: 'services',
-                          label: get(
-                              translations,
-                              ['appMenu', 'services'],
-                              'Services'
-                          ),
-                      },
-                      { type: 'separator' },
-                      {
-                          role: 'hide',
-                          label: get(translations, ['appMenu', 'hide'], 'Hide'),
-                      },
-                      {
-                          role: 'hideOthers',
-                          label: get(
-                              translations,
-                              ['appMenu', 'hideothers'],
-                              'Hide others'
-                          ),
-                      },
-                      {
-                          role: 'unhide',
-                          label: get(
-                              translations,
-                              ['appMenu', 'unhide'],
-                              'Unhide'
-                          ),
-                      },
-                      { type: 'separator' },
-                      {
-                          role: 'quit',
-                          label: get(translations, ['appMenu', 'quit'], 'Quit'),
-                      },
-                  ],
-              }
+                label: app.getName(),
+                submenu: [
+                    {
+                        role: 'about',
+                        label: get(
+                            translations,
+                            ['appMenu', 'about'],
+                            'About',
+                        ),
+                    },
+                    { type: 'separator' },
+                    {
+                        role: 'services',
+                        label: get(
+                            translations,
+                            ['appMenu', 'services'],
+                            'Services',
+                        ),
+                    },
+                    { type: 'separator' },
+                    {
+                        role: 'hide',
+                        label: get(translations, ['appMenu', 'hide'], 'Hide'),
+                    },
+                    {
+                        role: 'hideOthers',
+                        label: get(
+                            translations,
+                            ['appMenu', 'hideothers'],
+                            'Hide others',
+                        ),
+                    },
+                    {
+                        role: 'unhide',
+                        label: get(
+                            translations,
+                            ['appMenu', 'unhide'],
+                            'Unhide',
+                        ),
+                    },
+                    { type: 'separator' },
+                    {
+                        role: 'quit',
+                        label: get(translations, ['appMenu', 'quit'], 'Quit'),
+                    },
+                ],
+            }
             : {
-                  label: get(translations, ['appMenu', 'file'], 'File'),
-                  submenu: [
-                      {
-                          role: 'quit',
-                          label: get(translations, ['appMenu', 'quit'], 'Quit'),
-                      },
-                  ],
-              }
+                label: get(translations, ['appMenu', 'file'], 'File'),
+                submenu: [
+                    {
+                        role: 'quit',
+                        label: get(translations, ['appMenu', 'quit'], 'Quit'),
+                    },
+                ],
+            },
     );
 
     menu = Menu.buildFromTemplate(template);
@@ -443,35 +440,26 @@ function createWindow() {
     win.on('closed', () => {});
 }
 ipcMain.on('ssl_file_check', (_event: any, cert: string, id: string) => {
-    try {
-        const data = readFileSync(cert);
-        win.webContents.send('ssl_data', {
-            id,
-            data,
-            fileName: cert,
-        });
-    } catch (e) {
-        throw e;
-    }
+    const data = readFileSync(cert);
+    win.webContents.send('ssl_data', {
+        id,
+        data,
+        fileName: cert,
+    });
 });
 ipcMain.on('ssl_dialog_open', (_event: any, id: string) => {
     const saveTo = dialog.showOpenDialogSync({
         properties: ['openFile'],
     });
     if (saveTo) {
-        try {
-            const data = readFileSync(saveTo[0]);
-            win.webContents.send('ssl_data', {
-                id,
-                data,
-                fileName: saveTo[0],
-            });
-        } catch (e) {
-            throw e;
-        }
+        const data = readFileSync(saveTo[0]);
+        win.webContents.send('ssl_data', {
+            id,
+            data,
+            fileName: saveTo[0],
+        });
     }
 });
-
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -511,7 +499,7 @@ app.on('ready', async () => {
         (_event: any, translations: any, disabledMap: GenericObject) => {
             createAppMenu(translations, disabledMap);
             setAboutPanel(translations);
-        }
+        },
     );
 
     ipcMain.on('whatsnew-load', () => {

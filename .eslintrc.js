@@ -31,8 +31,13 @@ module.exports = {
         'class-methods-use-this': 'off',
         'lines-between-class-members': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
-        'vuejs-accessibility/click-events-have-key-events': 'off',
-        'vuejs-accessibility/form-control-has-label': 'off',
+    extends: [
+        'plugin:vue/essential',
+        'airbnb-base',
+        '@vue/typescript/recommended',
+    ],
+    plugins: ['vuejs-accessibility'],
+    parserOptions: {
         strict: 'off',
         'lines-around-directive': 'off',
         'no-useless-constructor': 'off',

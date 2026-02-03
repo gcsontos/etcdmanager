@@ -335,7 +335,7 @@ export default class WatcherManager extends CrudBase implements List {
                 watcher.activated = false;
                 this.$store.commit('watcher', { key: watcher.name, op: 'del' });
             } catch (e) {
-                this.$store.commit('message', Messages.error(e));
+                this.$store.commit('message', Messages.error(String(e)));
             }
         }
         return Promise.resolve(this);
@@ -347,7 +347,7 @@ export default class WatcherManager extends CrudBase implements List {
         try {
             await this.etcd.activateWatcher(watcher);
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         return Promise.resolve(this);
@@ -368,7 +368,7 @@ export default class WatcherManager extends CrudBase implements List {
                 }
             }
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         return Promise.resolve(this);
@@ -404,7 +404,7 @@ export default class WatcherManager extends CrudBase implements List {
             await this.load();
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -441,7 +441,7 @@ export default class WatcherManager extends CrudBase implements List {
             this.$store.commit('message', Messages.success());
             await this.unregisterWatchers(toBeRemoved);
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);

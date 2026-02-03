@@ -265,7 +265,7 @@ export default class UserManager extends CrudBase implements List {
         } catch (error) {
             // @ts-ignore
             CrudBase.options.methods.editItem.call(this, item, false);
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
     }
 
@@ -275,7 +275,7 @@ export default class UserManager extends CrudBase implements List {
             await CrudBase.options.methods.confirmPurge.call(this);
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -290,7 +290,7 @@ export default class UserManager extends CrudBase implements List {
             );
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -302,7 +302,7 @@ export default class UserManager extends CrudBase implements List {
             this.data = await this.etcd.getUsers();
             this.loading = false;
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);

@@ -312,8 +312,10 @@ export default class RoleEditor extends BaseEditor {
     public itemType: string = 'role';
     public permissionDialog: boolean = false;
     public roleExists: boolean = false;
+    // @ts-ignore TS2729
     public selected: GenericObject[] = [];
-    public name: string = this.data.name || '';
+    // @ts-ignore TS2729
+    public name: string = this.data?.name || '';
     public currentPermission: PermissionObject;
     public defaultPermission: PermissionObject = {
         key: '',
@@ -412,7 +414,7 @@ export default class RoleEditor extends BaseEditor {
                 };
             });
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         return Promise.resolve(this);
@@ -437,7 +439,7 @@ export default class RoleEditor extends BaseEditor {
             await this.loadPermissions();
             this.cancelPermission();
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         return Promise.resolve(this);
@@ -467,7 +469,7 @@ export default class RoleEditor extends BaseEditor {
             this.toggleLoading();
             this.$store.commit('message', Messages.success());
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
         this.focus('name');
         return Promise.resolve(this);
@@ -493,7 +495,7 @@ export default class RoleEditor extends BaseEditor {
             this.$v.$reset();
         } catch (e) {
             this.toggleLoading();
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         this.focus('name');

@@ -101,9 +101,12 @@ export default class ActionEditor extends BaseEditor {
     }
 
     public action: GenericObject = {
-        id: this.data.id,
-        action: this.data.action,
-        event: this.data.event,
+        // @ts-ignore TS2729
+        id: this.data?.id || '',
+        // @ts-ignore TS2729
+        action: this.data?.action || '',
+        // @ts-ignore TS2729
+        event: this.data?.event || '',
     };
 
     public actions: GenericObject[] = [

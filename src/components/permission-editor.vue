@@ -183,10 +183,13 @@ export default class PermissionEditor extends BaseEditor {
 
     public itemId: string = 'key';
     public itemType: string = 'permission';
+    // @ts-ignore TS2729
     public actionDialog: boolean = false;
-    public key: string = this.data.key || '';
+    // @ts-ignore TS2729
+    public key: string = this.data?.key || '';
     public radios: string = '';
-    public permission: GenericObject = this.data.permission || {
+    // @ts-ignore TS2729
+    public permission: GenericObject = this.data?.permission || {
         name: 'Read',
         value: 'Read',
     };
@@ -272,7 +275,7 @@ export default class PermissionEditor extends BaseEditor {
                     )
                 );
             } else {
-                this.$store.commit('message', Messages.error(e));
+                this.$store.commit('message', Messages.error(String(e)));
             }
         }
 

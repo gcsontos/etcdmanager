@@ -2,7 +2,7 @@ import { WatcherAction, DataService } from './../../types/index';
 import {
     Etcd3, Watcher, EtcdError,
 } from 'etcd3';
-import * as RPC from 'etcd3/lib/src/rpc';
+import * as RPC from 'etcd3/lib/rpc';
 import EtcdService from './etcd.service';
 import { WatcherEntry } from '../../types';
 import store from '@/store';
@@ -42,7 +42,6 @@ export default class WatcherService extends EtcdService implements DataService {
         } if (outputType === 2) {
             return new Notification('Attention!', {
                 lang: 'en',
-                timestamp: Date.now(),
                 body: message,
                 requireInteraction: true,
                 icon: './assets/etcd-glyph-color.png',
@@ -84,8 +83,8 @@ export default class WatcherService extends EtcdService implements DataService {
         try {
             watcherStream = await this.createWatcher(watcher);
         } catch (e) {
-            Messages.error(e);
-            return Promise.reject(new Error(e));
+            Messages.error(String(e));
+            return Promise.reject(new Error(String(e)));
         }
 
         watcherStream = this.registerWatcherEvents(

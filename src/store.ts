@@ -7,10 +7,8 @@ import { i18n, loadedLang } from './main';
 import { join } from 'path';
 import VueI18n from 'vue-i18n';
 import { CurrentProfileType } from '../types';
-const {
-    ipcRenderer,
-    remote: { app },
-} = require('electron');
+const { ipcRenderer } = require('electron');
+const { app } = require('@electron/remote');
 
 Vue.use(Vuex);
 

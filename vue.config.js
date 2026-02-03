@@ -2,6 +2,7 @@ module.exports = {
     assetsDir: 'assets',
     runtimeCompiler: true,
     configureWebpack: {
+        target: 'electron-renderer',
         node: {
             __dirname: true,
             __filename: false,
@@ -14,31 +15,11 @@ module.exports = {
         module: {
             rules: [
                 {
-                    test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-                    use: [
-                        {
-                            loader: 'url-loader',
-                            options: {
-                                fallback: {
-                                    loader: 'file-loader',
-                                    options: {
-                                        name: 'assets/img/[name].[ext]',
-                                    },
-                                },
-                            },
-                        },
-                    ],
-                },
-                {
-                    test: /\.(svg)(\?.*)?$/,
-                    use: [
-                        {
-                            loader: 'file-loader',
-                            options: {
-                                name: 'assets/img/[name].[ext]',
-                            },
-                        },
-                    ],
+                    test: /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/,
+                    type: 'asset',
+                    generator: {
+                        filename: 'assets/img/[name][ext]'
+                    }
                 },
             ],
         },

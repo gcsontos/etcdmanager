@@ -9,7 +9,7 @@ import { ConfigService } from '../services/config.service';
 import WhatsNewDialog from './whatsnew.dialog.vue';
 import Messages from '../lib/messages';
 import StatsService from '../services/stats.service';
-const app = require('electron').remote.app
+const { app } = require('@electron/remote');
 
 @Component({
     name: 'App',
@@ -291,7 +291,7 @@ export default class App extends Vue {
     background-blend-mode: var(--blend-top, normal),
         var(--blend-bottom, saturation), normal;
 
-    --image2: url('/assets/logo2.svg');
+    --image2: url('../assets/logo2.svg');
 
     --color-v: black;
     --color: grey;

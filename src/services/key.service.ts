@@ -138,7 +138,7 @@ export default class KeyService extends EtcdService implements DataService {
         const builder = this.client.delete();
         let queries: Promise<{ [key: string]: string; }>[] = [];
 
-        if (!this.authService.isAuthenticated() || this.authService.isRoot()) {
+        if (!this.authService.isAuthenticated() || await this.authService.isRoot()) {
             queries.push(builder.all());
         } else {
             queries = await this.mkAuthQueries(false);

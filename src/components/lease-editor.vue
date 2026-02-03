@@ -303,8 +303,9 @@ export default class LeaseEditor extends BaseEditor {
     @Prop() data: {
         ID: string;
     };
+    // @ts-ignore TS2729
 
-    public id: string = this.data.ID || '';
+    public id: string = this.data?.ID || '';
 
     public keys: GenericObject[] = [];
     private remaining: number = 0;
@@ -326,7 +327,7 @@ export default class LeaseEditor extends BaseEditor {
         try {
             this.lease = await this.leaseService.loadLease(this.id);
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
         this.keys = this.lease.keys.map((key: Buffer) => {
             return { name: key.toString() };

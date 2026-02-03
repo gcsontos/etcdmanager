@@ -447,9 +447,10 @@ export default class KeyEditor extends BaseEditor {
     };
     // @ts-ignore
     @Prop() mode: string;
-
-    public key: string = this.data.key || '';
-    public value: string = this.data.value || '';
+    // @ts-ignore TS2729
+    public key: string = this.data?.key || '';
+    // @ts-ignore TS2729
+    public value: string = this.data?.value || '';
     public ttl: string = '0';
     public showRevs: number | null = null;
 
@@ -622,7 +623,7 @@ export default class KeyEditor extends BaseEditor {
                 );
             }
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
             this.toggleLoading();
         }
 

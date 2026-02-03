@@ -1307,6 +1307,8 @@ import { Etcd3, IOptions } from 'etcd3';
 import { AuthService } from '../services/auth.service';
 import StatsService from '../services/stats.service';
 import { writeFileSync } from 'fs';
+import Mousetrap from 'mousetrap';
+type ExtendedKeyboardEvent = Mousetrap.ExtendedKeyboardEvent;
 
 const { ipcRenderer } = require('electron');
 
@@ -1844,7 +1846,7 @@ export default class Configuration extends Vue {
         } catch (e) {
             this.testColor = 'error';
             this.testing = false;
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
     }
 
@@ -2075,7 +2077,7 @@ export default class Configuration extends Vue {
                 });
             }
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         return true;

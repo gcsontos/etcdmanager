@@ -5,6 +5,7 @@ import {
     app,
     protocol,
     BrowserWindow,
+    BaseWindow,
     Menu,
     MenuItemConstructorOptions,
     Tray,
@@ -55,9 +56,10 @@ function loadWhatsNew() {
 
 function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
     const menuRouter = (where: string) => {
-        // tslint:disable-next-line: variable-name
-        return (_menuItem: any, window: BrowserWindow) => {
-            window.webContents.send('navigate', where);
+        return (_menuItem: any, window?: BaseWindow) => {
+            if (window && window instanceof BrowserWindow) {
+                window.webContents.send('navigate', where);
+            }
         };
     };
 
@@ -139,16 +141,16 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(translations, ['appMenu', 'paste'], 'Paste'),
                 },
                 ...(isMac
-                    ? [
+                    ? ([
                           {
-                              role: 'pasteAndMatchStyle',
+                              role: 'pasteAndMatchStyle' as const,
                               label: get(
                                   translations,
                                   ['appMenu', 'pasteAndMatchStyle'],
                                   'Paste and match style'
                               ),
                           },
-                      ]
+                      ] as MenuItemConstructorOptions[])
                     : []),
                 {
                     role: 'delete',
@@ -170,9 +172,9 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
             // @ts-ignore
             submenu: [
                 ...(isDevelopment
-                    ? [
+                    ? ([
                           {
-                              role: 'reload',
+                              role: 'reload' as const,
                               label: get(
                                   translations,
                                   ['appMenu', 'reload'],
@@ -180,18 +182,18 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                               ),
                           },
                           {
-                              role: 'forcereload',
+                              role: 'forceReload' as const,
                               label: get(
                                   translations,
                                   ['appMenu', 'forcereload'],
                                   'Force reload'
                               ),
                           },
-                      ]
+                      ] as MenuItemConstructorOptions[])
                     : []),
                 { type: 'separator' },
                 {
-                    role: 'resetzoom',
+                    role: 'resetZoom',
                     label: get(
                         translations,
                         ['appMenu', 'resetzoom'],
@@ -199,11 +201,11 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     ),
                 },
                 {
-                    role: 'zoomin',
+                    role: 'zoomIn',
                     label: get(translations, ['appMenu', 'zoomin'], 'Zoom in'),
                 },
                 {
-                    role: 'zoomout',
+                    role: 'zoomOut',
                     label: get(
                         translations,
                         ['appMenu', 'zoomout'],
@@ -212,7 +214,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                 },
                 { type: 'separator' },
                 {
-                    role: 'togglefullscreen',
+                    role: 'toggleFullscreen',
                     label: get(
                         translations,
                         ['appMenu', 'togglefullscreen'],
@@ -221,18 +223,17 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                 },
                 { type: 'separator' },
                 ...(isDevelopment
-                    ? [
+                    ? ([
                           {
-                              role: 'toggledevtools',
+                              role: 'toggleDevTools' as const,
                               label: get(
                                   translations,
                                   ['appMenu', 'toggledevtools'],
                                   'Toggle DevTools'
                               ),
                           },
-                      ]
+                      ] as MenuItemConstructorOptions[])
                     : []),
-                ,
             ],
         },
         {
@@ -336,7 +337,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                           label: get(translations, ['appMenu', 'hide'], 'Hide'),
                       },
                       {
-                          role: 'hideothers',
+                          role: 'hideOthers',
                           label: get(
                               translations,
                               ['appMenu', 'hideothers'],
@@ -490,7 +491,7 @@ app.on('ready', async () => {
         try {
             await installVueDevtools();
         } catch (e) {
-            console.error('Vue Devtools failed to install:', e.toString());
+            console.error('Vue Devtools failed to install:', String(e));
         }
     }
     createAppMenu(defaultTranslations.default.en);

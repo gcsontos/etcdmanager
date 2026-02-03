@@ -370,7 +370,7 @@ export default class RoleManager extends CrudBase implements List {
         } catch (error) {
             // @ts-ignore
             CrudBase.options.methods.editItem.call(this, item, false);
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
     }
 
@@ -380,7 +380,7 @@ export default class RoleManager extends CrudBase implements List {
             await CrudBase.options.methods.confirmPurge.call(this);
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -393,7 +393,7 @@ export default class RoleManager extends CrudBase implements List {
             await this.load();
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         this.cancelDelete();
@@ -404,12 +404,12 @@ export default class RoleManager extends CrudBase implements List {
         this.loading = true;
         try {
             this.data = await this.etcd.getRoles();
-            this.data = this.data.filter((row) => {
+            this.data = this.data?.filter((row) => {
                 return row.name !== 'root';
             });
             this.loading = false;
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);

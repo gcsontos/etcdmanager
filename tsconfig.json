@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "ES2022",
     "module": "esnext",
     "strict": true,
     "skipLibCheck": true,
@@ -14,7 +14,7 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "strictPropertyInitialization": true,
+    "strictPropertyInitialization": false,
     "noImplicitThis": true,
     "alwaysStrict": true,
     "noUnusedLocals": true,
@@ -24,9 +24,7 @@
 
     "baseUrl": ".",
     "types": [
-      "webpack-env",
-      "node_modules/@types",
-      "types"
+      "webpack-env"
     ],
     "paths": {
       "*": ["types/*"],

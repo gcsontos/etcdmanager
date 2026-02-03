@@ -409,7 +409,7 @@ import { BaseEditor } from '../lib/editor.class';
 import WatcherService from '../services/watcher.service';
 import { Prop } from 'vue-property-decorator';
 import ActionEditor from './action-editor.vue';
-import uuidv1 from 'uuid/v1';
+import { v1 as uuidv1 } from 'uuid';
 
 @Component({
     name: 'watcher-editor',
@@ -447,10 +447,14 @@ export default class WatcherEditor extends BaseEditor {
         event: { name: 'put', value: 0, type: 2 },
     };
     public selected: GenericObject[] = [];
-    public name: string = this.data.name || '';
-    public key: string = this.data.key || '';
-    public prefix: boolean = this.data.prefix || false;
-    public actions: WatcherAction[] = this.data.actions || [];
+    // @ts-ignore TS2729
+    public name: string = this.data?.name || '';
+    // @ts-ignore TS2729
+    public key: string = this.data?.key || '';
+    // @ts-ignore TS2729
+    public prefix: boolean = this.data?.prefix || false;
+    // @ts-ignore TS2729
+    public actions: WatcherAction[] = this.data?.actions || [];
 
     public headers = [
         {

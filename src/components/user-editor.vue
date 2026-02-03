@@ -327,8 +327,9 @@ export default class UserEditor extends BaseEditor {
     };
     // @ts-ignore
     @Prop() mode: string;
+    // @ts-ignore TS2729
 
-    public name: string = this.data.name || '';
+    public name: string = this.data?.name || '';
     public password: string = '';
     public pwcheck: string = '';
     public showPassword: boolean = false;
@@ -403,7 +404,7 @@ export default class UserEditor extends BaseEditor {
             this.$store.commit('message', Messages.success());
             return Promise.resolve(this);
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
             this.toggleLoading();
         }
 
@@ -413,13 +414,13 @@ export default class UserEditor extends BaseEditor {
     public async created() {
         try {
             this.roles = await this.roleService.getRoles();
-            this.ownRoles = this.data.roles
+            this.ownRoles = this.data?.roles
                 ? this.data.roles.map((role) => {
                       return role.name;
                   })
                 : [];
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         this.showRights = !this.createMode;
@@ -452,7 +453,7 @@ export default class UserEditor extends BaseEditor {
             this.focus('name');
             return Promise.resolve(this);
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
             this.toggleLoading();
         }
 

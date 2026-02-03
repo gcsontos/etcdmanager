@@ -786,7 +786,7 @@ export default class KeyManager extends CrudBase implements List {
         } catch (error) {
             // @ts-ignore
             CrudBase.options.methods.editItem.call(this, item, false);
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -810,7 +810,7 @@ export default class KeyManager extends CrudBase implements List {
             this.toggleLoading();
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
             this.toggleLoading();
         }
 
@@ -823,7 +823,7 @@ export default class KeyManager extends CrudBase implements List {
             await CrudBase.options.methods.confirmPurge.call(this);
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -838,7 +838,7 @@ export default class KeyManager extends CrudBase implements List {
             );
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return this;
@@ -857,7 +857,7 @@ export default class KeyManager extends CrudBase implements List {
             });
             this.loading = false;
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
         this.loadTree();
 

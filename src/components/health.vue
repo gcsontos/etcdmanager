@@ -313,6 +313,8 @@ import { IMember, IAlarmResponse, IStatusResponse } from 'etcd3';
 import Messages from '../lib/messages';
 import { GenericObject } from '../../types';
 import { PlatformService } from '../services/platform.service';
+import Mousetrap from 'mousetrap';
+type ExtendedKeyboardEvent = Mousetrap.ExtendedKeyboardEvent;
 
 @Component({
     name: 'health-check',
@@ -388,7 +390,7 @@ export default class HealthCheck extends Vue {
             const res = await this.etcd.listMembers();
             this.data = res;
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
     }
 }

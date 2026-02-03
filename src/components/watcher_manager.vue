@@ -266,7 +266,8 @@ import WatcherService from '../services/watcher.service';
 import { CrudBase, List } from '../lib/crud.class';
 import WatcherEditor from './watcher-editor.vue';
 
-class _WatcherManagerError extends Error {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class WatcherManagerError extends Error {
     constructor(message: any) {
         super(message);
         this.name = 'WatcherManagerError';

@@ -1,0 +1,19 @@
+/// <reference types="vite/client" />
+
+declare module '*.vue' {
+    import type { DefineComponent } from 'vue';
+
+    const component: DefineComponent<object, object, unknown>;
+    export default component;
+}
+
+interface ImportMetaEnv {
+    readonly VITE_DEV_SERVER_URL: string;
+    readonly MODE: string;
+    readonly DEV: boolean;
+    readonly PROD: boolean;
+}
+
+interface ImportMeta {
+    readonly env: ImportMetaEnv;
+}

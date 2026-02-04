@@ -188,7 +188,7 @@ export default class App extends Vue {
             v-on:cancel="hideNews()"
         ></whatsnew-dialog>
 
-        <main-menu v-bind:drawer="drawer"></main-menu>
+        <main-menu :drawer.sync="drawer"></main-menu>
         <v-toolbar app fixed clipped-left>
             <v-toolbar-side-icon @click.stop="drawer = !drawer">
                 <v-icon data-test="app.menu.icon">menu</v-icon>

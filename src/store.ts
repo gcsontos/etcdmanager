@@ -5,7 +5,7 @@ import Vuex from 'vuex';
 import { join } from 'path';
 import VueI18n from 'vue-i18n';
 import EtcdService from './services/etcd.service';
-import { i18n, loadedLang } from './main';
+import { i18n, loadedLang } from './i18n';
 import { CurrentProfileType } from '../types';
 
 const { ipcRenderer } = require('electron');
@@ -183,7 +183,9 @@ export default new Vuex.Store({
             const lang = payload;
             if (i18n.locale !== lang) {
                 if (!loadedLang.includes(lang)) {
-                    const translations = await import(`@/i18n/${lang}`);
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore - Dynamic import for i18n, works at runtime
+                    const translations = await import(/* @vite-ignore */ `@/i18n/${lang}`);
                     i18n.setLocaleMessage(lang, translations.default[lang]);
                     loadedLang.push(lang);
                     context.commit('config', { language: lang });

@@ -12,8 +12,8 @@ import {
     dialog,
     ipcMain,
 } from 'electron';
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
+// Vue DevTools disabled - causes renderer.bundle.js errors in Electron 35
+// import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import * as Splashscreen from '@trodi/electron-splashscreen';
 import { join } from 'path';
 import { readFileSync } from 'fs';
@@ -23,6 +23,10 @@ import marked from 'marked';
 import * as remoteMain from '@electron/remote/main';
 import * as defaultTranslations from './i18n/en';
 import { GenericObject } from '../types/index';
+
+// Disable GPU acceleration to avoid GL errors in VMs/remote sessions
+// Remove this if you need hardware acceleration
+app.disableHardwareAcceleration();
 
 // Initialize @electron/remote
 remoteMain.initialize();
@@ -40,7 +44,11 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 const isMac = process.platform === 'darwin';
 let menu: Menu | null = null;
 
-declare const __static: any;
+// Static assets path - in dev mode points to public folder, in production to app resources
+// In dev mode with electron-vite, __dirname is dist-electron/main
+const __static = isDevelopment
+    ? join(app.getAppPath(), 'public')
+    : join(process.resourcesPath, 'public');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -390,7 +398,7 @@ function setAboutPanel(_translations: any = defaultTranslations.default.en) {
 
 function createWindow() {
     // Create the browser window.
-    const mainOpts = {
+    const mainOpts: Electron.BrowserWindowConstructorOptions = {
         width: 800,
         height: 600,
         title: 'ETCD Manager',
@@ -398,21 +406,25 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            enableRemoteModule: true,
+            sandbox: false,
         },
     };
 
-    const config: Splashscreen.Config = {
-        windowOpts: mainOpts,
-        templateUrl: `${__static}/splash.html`,
-        minVisible: 2000,
-        splashScreenOpts: {
-            width: 800,
-            height: 600,
-        },
-    };
-
-    win = Splashscreen.initSplashScreen(config);
+    // Use splash screen only in production, skip in development for faster iteration
+    if (isDevelopment) {
+        win = new BrowserWindow(mainOpts);
+    } else {
+        const config: Splashscreen.Config = {
+            windowOpts: mainOpts,
+            templateUrl: `${__static}/splash.html`,
+            minVisible: 2000,
+            splashScreenOpts: {
+                width: 800,
+                height: 600,
+            },
+        };
+        win = Splashscreen.initSplashScreen(config);
+    }
     win.setTitle('ETCD Manager');
 
     // Enable @electron/remote for this window
@@ -422,16 +434,13 @@ function createWindow() {
         e.preventDefault();
     });
 
-    if (process.env.WEBPACK_DEV_SERVER_URL) {
+    if (process.env.VITE_DEV_SERVER_URL) {
         // Load the url of the dev server if in development mode
-        win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
-        if (!process.env.IS_TEST) {
-            win.webContents.openDevTools();
-        }
+        win.loadURL(process.env.VITE_DEV_SERVER_URL);
+        // DevTools opened manually via View menu or Ctrl+Shift+I
     } else {
-        createProtocol('app');
         // Load the index.html when not in development
-        win.loadURL('app://./index.html');
+        win.loadFile(join(__dirname, '../dist/index.html'));
         autoUpdater.checkForUpdatesAndNotify();
     }
 
@@ -482,14 +491,8 @@ app.on('activate', () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
-    if (isDevelopment && !process.env.IS_TEST) {
-        // Install Vue Devtools
-        try {
-            await installExtension(VUEJS_DEVTOOLS);
-        } catch (e) {
-            console.error('Vue Devtools failed to install:', String(e));
-        }
-    }
+    // Vue DevTools installation disabled - causes renderer.bundle.js errors in Electron 35
+    // See: https://github.com/MarshallOfSound/electron-devtools-installer/issues/220
     createAppMenu(defaultTranslations.default.en);
     setAboutPanel();
     createWindow();

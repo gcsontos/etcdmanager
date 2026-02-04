@@ -1,5 +1,5 @@
 <template>
-    <v-navigation-drawer v-model="drawer" clipped fixed app>
+    <v-navigation-drawer v-model="drawerState" clipped fixed app>
         <v-list dense>
             <v-list-tile ripple to="/configure">
                 <v-list-tile-action>
@@ -101,6 +101,15 @@ export default class Menu extends Vue {
     constructor() {
         super();
         this.authService = new AuthService();
+    }
+
+    get drawerState() {
+        // @ts-ignore - drawer is defined in @Component props
+        return this.drawer;
+    }
+
+    set drawerState(value: boolean) {
+        this.$emit('update:drawer', value);
     }
 
     get isLimited() {

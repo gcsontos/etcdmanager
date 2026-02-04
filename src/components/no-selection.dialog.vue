@@ -31,8 +31,7 @@ import Dialog from '../lib/dialog.class';
     name: 'no-selection-dialog',
 })
 export default class NoSelectionDialog extends Dialog {
-    // @ts-ignore
-    @Prop() open: boolean = false;
+    @Prop({ default: false }) open!: boolean;
 
     get isOpen() {
         return this.open;

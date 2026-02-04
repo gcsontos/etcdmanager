@@ -1,4 +1,4 @@
-import { i18n } from '@/main';
+import { i18n } from '@/i18n';
 
 export default class Messages {
     public static error(error: string, translate: boolean = false) {

@@ -9,6 +9,7 @@ module.exports = {
         'airbnb-base',
         '@vue/typescript/recommended',
     ],
+    plugins: [],
     parserOptions: {
         ecmaVersion: 2022,
         parser: '@typescript-eslint/parser',
@@ -31,13 +32,6 @@ module.exports = {
         'class-methods-use-this': 'off',
         'lines-between-class-members': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
-    extends: [
-        'plugin:vue/essential',
-        'airbnb-base',
-        '@vue/typescript/recommended',
-    ],
-    plugins: ['vuejs-accessibility'],
-    parserOptions: {
         strict: 'off',
         'lines-around-directive': 'off',
         'no-useless-constructor': 'off',
@@ -95,6 +89,12 @@ module.exports = {
             files: ['src/lib/*.ts'],
             rules: {
                 '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+            },
+        },
+        {
+            files: ['vite.config.ts'],
+            rules: {
+                'import/no-extraneous-dependencies': 'off',
             },
         },
     ],

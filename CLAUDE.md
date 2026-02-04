@@ -27,12 +27,9 @@ npm run electron:serve              # Start dev server with hot reload
 
 ### Building
 ```bash
-# IMPORTANT: Set OpenSSL legacy provider for Node 22 compatibility
-export NODE_OPTIONS=--openssl-legacy-provider
-
 npm run build                        # Build web version
 npm run electron:build               # Build for current platform
-npm run electron:build:linux         # Build for Linux (AppImage, snap, tar.gz)
+npm run electron:build:linux         # Build for Linux (AppImage, tar.gz)
 npm run electron:build:mac           # Build for macOS (dmg)
 npm run electron:build:win           # Build for Windows (nsis installer)
 ```
@@ -48,8 +45,6 @@ npm run lint:fix                     # Auto-fix ESLint issues
 
 ### Publishing
 ```bash
-export NODE_OPTIONS=--openssl-legacy-provider  # Required for builds
-
 npm run electron:publish:linux       # Build and publish to GitHub for Linux
 npm run electron:publish:mac         # Build and publish to GitHub for macOS
 npm run electron:publish:win         # Build and publish to GitHub for Windows
@@ -152,12 +147,15 @@ The app heavily uses keyboard shortcuts via Mousetrap (bound in `CrudBase`). Pre
 
 ## Important Technical Details
 
-### Node.js 22 and OpenSSL
-**Critical**: When building the application, you must set the OpenSSL legacy provider:
-```bash
-export NODE_OPTIONS=--openssl-legacy-provider
-```
-This is required because Node.js 22 uses OpenSSL 3, which removed support for MD4 hashing used by webpack 4. The electron builder plugin still uses webpack 4 internally.
+### Build System
+The project uses **Vite** as the build system with `vite-plugin-electron` for Electron integration. This replaces the previous Vue CLI + webpack 4 setup and provides:
+- **No OpenSSL workaround needed** - Vite uses esbuild/rollup, not webpack 4
+- **Faster development builds** - Vite's native ESM dev server
+- **Modern bundling** - Rollup for production builds
+
+Configuration files:
+- `vite.config.ts` - Vite configuration with Electron plugins
+- `electron-builder.yml` - Electron Builder packaging configuration
 
 ### GRPC Implementation
 The project uses `@grpc/grpc-js` (pure JavaScript) instead of the native `grpc` module. This provides:
@@ -166,7 +164,7 @@ The project uses `@grpc/grpc-js` (pure JavaScript) instead of the native `grpc` 
 - **Easier development setup** - just `npm install` with no rebuild steps
 
 ### Proto Loader Alias
-The webpack config aliases `@grpc/proto-loader` to `webpack-proto-loader` for browser compatibility in the renderer process.
+The Vite config aliases `@grpc/proto-loader` to `webpack-proto-loader` for browser compatibility in the renderer process.
 
 ### TypeScript Configuration
 - Path alias: `@/*` maps to `src/*`
@@ -219,9 +217,11 @@ this.keyboardEvents = Mousetrap.bind('ctrl+n', () => this.create());
 - **Electron 35.7.5** (desktop app framework with Node 22.14.0)
 
 ### Build Tools
-- **Vue CLI 5.0** (build system)
+- **Vite 5.4** (build system - replaced Vue CLI)
+- **vite-plugin-electron 0.28** (Electron main process integration)
+- **vite-plugin-electron-renderer 0.14** (Electron renderer process Node.js support)
+- **@vitejs/plugin-vue2 2.3** (Vue 2 support for Vite)
 - **Electron Builder 25.0** (packaging)
-- **vue-cli-plugin-electron-builder ~2.1.1** (Electron integration)
 - **ESLint 8.57** with TypeScript and Vue plugins
 - **Dart Sass 1.80** (SCSS compilation)
 - **Playwright 1.48** (E2E testing)
@@ -245,7 +245,7 @@ this.keyboardEvents = Mousetrap.bind('ctrl+n', () => this.create());
 - **electron-updater 6.3.0** (auto-updates)
 - **mousetrap 1.6.5** (keyboard shortcuts)
 - **moment** (date/time manipulation)
-- **marked 1.x** (markdown rendering - kept at v1 for webpack 4 compatibility)
+- **marked 1.x** (markdown rendering)
 - **uuid 11.0** (UUID generation)
 - **lodash-es 4.17.21** (utility functions)
 
@@ -256,29 +256,28 @@ This project was upgraded from Node 10+ to Node 22 in February 2026. Key changes
 ### What Changed
 1. **GRPC Migration**: Replaced native `grpc` (1.24.2) with `@grpc/grpc-js` (1.12+) - pure JavaScript implementation compatible with Node 22
 2. **Electron**: Upgraded from v6 to v35.7.5 (includes Node 22.14.0)
-3. **Build Tools**: Vue CLI 4 → 5, TypeScript 3.8 → 5.7, Electron Builder 21 → 25
+3. **Build System**: Migrated from Vue CLI + webpack 4 to Vite + vite-plugin-electron
 4. **Linting**: Migrated from TSLint to ESLint 8.x
 5. **Styling**: Replaced node-sass with Dart Sass
 6. **Testing**: Added Playwright (replacing Spectron which is deprecated)
 7. **Vue 2.7**: Upgraded to final Vue 2 release with Composition API backport
+8. **TypeScript**: Upgraded from 3.8 → 5.7
 
 ### Build Considerations
-- **OpenSSL Legacy Provider**: Required for builds due to webpack 4 in electron-builder plugin
 - **Legacy Peer Deps**: Use `--legacy-peer-deps` flag with npm install due to dependency resolution conflicts
-- **marked Library**: Kept at v1.x for webpack 4 compatibility (v4+ uses syntax webpack 4 can't parse)
+- **Vue DevTools**: Disabled in development due to Electron 35 compatibility issues with the extension installer
 
 ### Known Issues & Workarounds
 - Some dependencies still show engine warnings for older Node versions (safe to ignore)
-- Webpack 4 in vue-cli-plugin-electron-builder requires OpenSSL legacy provider
 - Property initialization in Vue class components requires `@ts-ignore` comments due to TypeScript 5 strictness
+- Vue DevTools extension installation causes "renderer.bundle.js" errors in Electron 35 - use built-in DevTools instead (Ctrl+Shift+I)
 
 ### Future Improvements
 - Consider migrating to Vue 3 when ready for breaking changes
-- Evaluate newer electron builder plugins that support webpack 5
 - Complete Playwright test migration from old Spectron tests
-- Update marked to latest version when electron builder supports webpack 5
+- Re-enable Vue DevTools when electron-devtools-installer is updated for Electron 35
 
 ### Compatibility
 - **Minimum Node.js**: 22.0.0
 - **Tested on**: Node 22.19.0
-- **Target Platforms**: Linux (AppImage, snap, tar.gz), macOS (dmg), Windows (nsis)
+- **Target Platforms**: Linux (AppImage, tar.gz), macOS (dmg), Windows (nsis)

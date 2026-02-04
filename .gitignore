@@ -28,8 +28,9 @@ yarn-error.log*
 *.sln
 *.sw?
 
-#Electron-builder output
+# Electron build output
 /dist_electron
+/dist-electron
 /default.etcd
 
 # Package manager lock files (project uses yarn)

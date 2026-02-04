@@ -55,7 +55,8 @@ npm run electron:publish:win         # Build and publish to GitHub for Windows
 ### Application Entry Points
 
 - **Electron Main Process**: `src/background.ts` - Handles window creation, menu management, IPC communication, splash screen, and auto-updates
-- **Vue App Entry**: `src/main.ts` - Initializes Vue app with i18n, Vuetify, Vuelidate, and global components
+- **Vue App Entry**: `src/main.ts` - Initializes Vue app with Vuetify, Vuelidate, and global components
+- **i18n Setup**: `src/i18n/index.ts` - VueI18n configuration (extracted to avoid circular dependencies)
 - **Router**: `src/router.ts` - Vue Router configuration with route guards
 - **State Management**: `src/store.ts` - Vuex store with ETCD connection state, config profiles, watchers, and messages
 
@@ -80,7 +81,9 @@ npm run electron:publish:win         # Build and publish to GitHub for Windows
   - `validators.ts` - Custom Vuelidate validators
   - `messages.ts` - Message/notification helpers
 
-- **`src/i18n/`** - Internationalization (currently `en.ts`, `hu.ts`)
+- **`src/i18n/`** - Internationalization
+  - `index.ts` - VueI18n instance and configuration (imported by store.ts and other modules)
+  - `en.ts`, `hu.ts` - Translation files
 
 - **`src/guards/`** - Vue Router navigation guards
 
@@ -163,8 +166,8 @@ The project uses `@grpc/grpc-js` (pure JavaScript) instead of the native `grpc` 
 - **Cross-platform compatibility** - no platform-specific build issues
 - **Easier development setup** - just `npm install` with no rebuild steps
 
-### Proto Loader Alias
-The Vite config aliases `@grpc/proto-loader` to `webpack-proto-loader` for browser compatibility in the renderer process.
+### ETCD/GRPC Module Handling
+The `vite-plugin-electron-renderer` is configured to keep `etcd3`, `@grpc/grpc-js`, `@grpc/proto-loader`, and `protobufjs` as native CommonJS modules (not bundled). This is required because `etcd3` loads `.proto` files from disk at runtime.
 
 ### TypeScript Configuration
 - Path alias: `@/*` maps to `src/*`
@@ -271,6 +274,7 @@ This project was upgraded from Node 10+ to Node 22 in February 2026. Key changes
 - Some dependencies still show engine warnings for older Node versions (safe to ignore)
 - Property initialization in Vue class components requires `@ts-ignore` comments due to TypeScript 5 strictness
 - Vue DevTools extension installation causes "renderer.bundle.js" errors in Electron 35 - use built-in DevTools instead (Ctrl+Shift+I)
+- GPU acceleration is disabled by default (`app.disableHardwareAcceleration()`) to avoid GL errors in VMs/remote sessions - remove this call in `src/background.ts` if hardware acceleration is needed
 
 ### Future Improvements
 - Consider migrating to Vue 3 when ready for breaking changes

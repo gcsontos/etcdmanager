@@ -18,15 +18,15 @@ export default class WatcherService extends EtcdService implements DataService {
         case 'put':
             return `${date}: The key "${args[0]}" has been changed. New value: "${args[1]}"`;
         case 'delete':
-            return `${date} The key "${args[0]}" has been deleted.`;
+            return `${date}: The key "${args[0]}" has been deleted.`;
         case 'connected':
-            return `${date} The watcher ${args[0]} has been successfully reconnected!""`;
+            return `${date}: The watcher ${args[0]} has been successfully reconnected!`;
         case 'end':
-            return `${date} A watcher has been closed!""`;
+            return `${date}: A watcher has been closed!`;
         case 'disconnected':
-            return `${date} A watcher has been disconnected. Error: ${args[0]}""`;
+            return `${date}: A watcher has been disconnected. Error: ${args[0]}`;
         case 'error':
-            return `${date} Error: ${args[0]}""`;
+            return `${date}: Error: ${args[0]}`;
         }
         return '';
     }
@@ -83,7 +83,7 @@ export default class WatcherService extends EtcdService implements DataService {
         try {
             watcherStream = await this.createWatcher(watcher);
         } catch (e) {
-            Messages.error(String(e));
+            store.commit('message', Messages.error(String(e)));
             return Promise.reject(new Error(String(e)));
         }
 

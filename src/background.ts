@@ -19,7 +19,7 @@ import { join } from 'path';
 import { readFileSync } from 'fs';
 import { get } from 'lodash-es';
 import { autoUpdater } from 'electron-updater';
-import marked from 'marked';
+import { marked } from 'marked';
 import * as remoteMain from '@electron/remote/main';
 import * as defaultTranslations from './i18n/en';
 import { GenericObject } from '../types/index';
@@ -449,24 +449,32 @@ function createWindow() {
     win.on('closed', () => {});
 }
 ipcMain.on('ssl_file_check', (_event: any, cert: string, id: string) => {
-    const data = readFileSync(cert);
-    win.webContents.send('ssl_data', {
-        id,
-        data,
-        fileName: cert,
-    });
+    try {
+        const data = readFileSync(cert);
+        win.webContents.send('ssl_data', {
+            id,
+            data,
+            fileName: cert,
+        });
+    } catch (e) {
+        win.webContents.send('error-notification', 'common.messages.invalidFileError');
+    }
 });
 ipcMain.on('ssl_dialog_open', (_event: any, id: string) => {
     const saveTo = dialog.showOpenDialogSync({
         properties: ['openFile'],
     });
     if (saveTo) {
-        const data = readFileSync(saveTo[0]);
-        win.webContents.send('ssl_data', {
-            id,
-            data,
-            fileName: saveTo[0],
-        });
+        try {
+            const data = readFileSync(saveTo[0]);
+            win.webContents.send('ssl_data', {
+                id,
+                data,
+                fileName: saveTo[0],
+            });
+        } catch (e) {
+            win.webContents.send('error-notification', 'common.messages.invalidFileError');
+        }
     }
 });
 

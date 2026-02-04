@@ -566,8 +566,11 @@ export default class WatcherEditor extends BaseEditor {
             }
         } else {
             const current = this.actions.find((ac) => action.id === ac.id);
-            Vue.set(current as WatcherAction, 'action', action.action);
-            Vue.set(current as WatcherAction, 'event', action.event);
+            if (!current) {
+                return;
+            }
+            Vue.set(current, 'action', action.action);
+            Vue.set(current, 'event', action.event);
             this.submit();
         }
         this.cancelAction();

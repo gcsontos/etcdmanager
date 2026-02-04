@@ -51,8 +51,9 @@ export default class SaveAsDialog extends Dialog {
     @Prop() open: boolean;
     // @ts-ignore
     @Prop() itemName: string;
+    // @ts-ignore TS2729
 
-    public profile: string = this.itemName;
+    public profile: string = this.itemName || '';
 
     public submit(): SaveAsDialog {
         this.$emit('saveAs', this.profile);

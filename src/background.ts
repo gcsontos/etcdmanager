@@ -1,10 +1,10 @@
 'use strict';
-import { GenericObject } from './../types/index';
 
 import {
     app,
     protocol,
     BrowserWindow,
+    BaseWindow,
     Menu,
     MenuItemConstructorOptions,
     Tray,
@@ -12,32 +12,43 @@ import {
     dialog,
     ipcMain,
 } from 'electron';
-import {
-    createProtocol,
-    installVueDevtools,
-} from 'vue-cli-plugin-electron-builder/lib';
+// Vue DevTools disabled - causes renderer.bundle.js errors in Electron 35
+// import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import * as Splashscreen from '@trodi/electron-splashscreen';
 import { join } from 'path';
 import { readFileSync } from 'fs';
 import { get } from 'lodash-es';
-import * as defaultTranslations from './i18n/en';
 import { autoUpdater } from 'electron-updater';
-import marked from 'marked';
+import { marked } from 'marked';
+import * as remoteMain from '@electron/remote/main';
+import * as defaultTranslations from './i18n/en';
+import { GenericObject } from '../types/index';
+
+// Disable GPU acceleration to avoid GL errors in VMs/remote sessions
+// Remove this if you need hardware acceleration
+app.disableHardwareAcceleration();
+
+// Initialize @electron/remote
+remoteMain.initialize();
 
 const pkg = JSON.parse(
     readFileSync(
         join(
             process.platform !== 'win32' ? '/' : '',
             app.getAppPath(),
-            'package.json'
-        )
-    ).toString()
+            'package.json',
+        ),
+    ).toString(),
 );
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const isMac = process.platform === 'darwin';
 let menu: Menu | null = null;
 
-declare const __static: any;
+// Static assets path - in dev mode points to public folder, in production to app resources
+// In dev mode with electron-vite, __dirname is dist-electron/main
+const __static = isDevelopment
+    ? join(app.getAppPath(), 'public')
+    : join(process.resourcesPath, 'public');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -53,16 +64,14 @@ function loadWhatsNew() {
     win.webContents.send('whatsnew-data', marked(news));
 }
 
-function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
-    const menuRouter = (where: string) => {
-        // tslint:disable-next-line: variable-name
-        return (_menuItem: any, window: BrowserWindow) => {
+function createAppMenu(inputTranslations: any, disabledMap: GenericObject = {}) {
+    const menuRouter = (where: string) => (_menuItem: any, window?: BaseWindow) => {
+        if (window && window instanceof BrowserWindow) {
             window.webContents.send('navigate', where);
-        };
+        }
     };
 
-    // tslint:disable-next-line: no-parameter-reassignment
-    translations = translations || defaultTranslations.default.en;
+    const translations = inputTranslations || defaultTranslations.default.en;
 
     const template: MenuItemConstructorOptions[] = [
         {
@@ -73,7 +82,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'settings'],
-                        'Settings'
+                        'Settings',
                     ),
                     click: menuRouter('configure'),
                 },
@@ -82,7 +91,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(translations, ['appMenu', 'export'], 'Export'),
                     click: () => {
                         const saveTo = dialog.showSaveDialogSync({
-                            defaultPath: `etcd-manager-settings.json`,
+                            defaultPath: 'etcd-manager-settings.json',
                             properties: ['dontAddToRecent', 'createDirectory'],
                         } as any);
                         if (saveTo) {
@@ -139,16 +148,16 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(translations, ['appMenu', 'paste'], 'Paste'),
                 },
                 ...(isMac
-                    ? [
-                          {
-                              role: 'pasteAndMatchStyle',
-                              label: get(
-                                  translations,
-                                  ['appMenu', 'pasteAndMatchStyle'],
-                                  'Paste and match style'
-                              ),
-                          },
-                      ]
+                    ? ([
+                        {
+                            role: 'pasteAndMatchStyle' as const,
+                            label: get(
+                                translations,
+                                ['appMenu', 'pasteAndMatchStyle'],
+                                'Paste and match style',
+                            ),
+                        },
+                    ] as MenuItemConstructorOptions[])
                     : []),
                 {
                     role: 'delete',
@@ -160,7 +169,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'selectAll'],
-                        'Select all'
+                        'Select all',
                     ),
                 },
             ],
@@ -170,69 +179,68 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
             // @ts-ignore
             submenu: [
                 ...(isDevelopment
-                    ? [
-                          {
-                              role: 'reload',
-                              label: get(
-                                  translations,
-                                  ['appMenu', 'reload'],
-                                  'Reload'
-                              ),
-                          },
-                          {
-                              role: 'forcereload',
-                              label: get(
-                                  translations,
-                                  ['appMenu', 'forcereload'],
-                                  'Force reload'
-                              ),
-                          },
-                      ]
+                    ? ([
+                        {
+                            role: 'reload' as const,
+                            label: get(
+                                translations,
+                                ['appMenu', 'reload'],
+                                'Reload',
+                            ),
+                        },
+                        {
+                            role: 'forceReload' as const,
+                            label: get(
+                                translations,
+                                ['appMenu', 'forcereload'],
+                                'Force reload',
+                            ),
+                        },
+                    ] as MenuItemConstructorOptions[])
                     : []),
                 { type: 'separator' },
                 {
-                    role: 'resetzoom',
+                    role: 'resetZoom',
                     label: get(
                         translations,
                         ['appMenu', 'resetzoom'],
-                        'Reset zoom'
+                        'Reset zoom',
                     ),
                 },
                 {
-                    role: 'zoomin',
+                    role: 'zoomIn',
                     label: get(translations, ['appMenu', 'zoomin'], 'Zoom in'),
                 },
                 {
-                    role: 'zoomout',
+                    role: 'zoomOut',
                     label: get(
                         translations,
                         ['appMenu', 'zoomout'],
-                        'Zoom out'
+                        'Zoom out',
                     ),
                 },
                 { type: 'separator' },
                 {
-                    role: 'togglefullscreen',
+                    role: 'toggleFullscreen',
                     label: get(
                         translations,
                         ['appMenu', 'togglefullscreen'],
-                        'Toggle fullscreen'
+                        'Toggle fullscreen',
                     ),
                 },
                 { type: 'separator' },
                 ...(isDevelopment
-                    ? [
-                          {
-                              role: 'toggledevtools',
-                              label: get(
-                                  translations,
-                                  ['appMenu', 'toggledevtools'],
-                                  'Toggle DevTools'
-                              ),
-                          },
-                      ]
+                    ? ([
+                        {
+                            role: 'toggleDevTools' as const,
+                            label: get(
+                                translations,
+                                ['appMenu', 'toggledevtools'],
+                                'Toggle DevTools',
+                            ),
+                        },
+                    ] as MenuItemConstructorOptions[])
                     : []),
-                ,
             ],
         },
         {
@@ -245,7 +253,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'settings'],
-                        'Settings'
+                        'Settings',
                     ),
                     accelerator: 'CommandOrControl+Alt+S',
                     click: menuRouter('configure'),
@@ -264,7 +272,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'watchers'],
-                        'Watchers'
+                        'Watchers',
                     ),
                     accelerator: 'CommandOrControl+Alt+W',
                     click: menuRouter('watchers'),
@@ -296,7 +304,7 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
                     label: get(
                         translations,
                         ['appMenu', 'reportBug'],
-                        'Report a bug'
+                        'Report a bug',
                     ),
                     accelerator: 'CommandOrControl+Alt+B',
                     click: () => {
@@ -311,62 +319,62 @@ function createAppMenu(translations: any, disabledMap: GenericObject = {}) {
         // @ts-ignore
         isMac
             ? {
-                  label: app.getName(),
-                  submenu: [
-                      {
-                          role: 'about',
-                          label: get(
-                              translations,
-                              ['appMenu', 'about'],
-                              'About'
-                          ),
-                      },
-                      { type: 'separator' },
-                      {
-                          role: 'services',
-                          label: get(
-                              translations,
-                              ['appMenu', 'services'],
-                              'Services'
-                          ),
-                      },
-                      { type: 'separator' },
-                      {
-                          role: 'hide',
-                          label: get(translations, ['appMenu', 'hide'], 'Hide'),
-                      },
-                      {
-                          role: 'hideothers',
-                          label: get(
-                              translations,
-                              ['appMenu', 'hideothers'],
-                              'Hide others'
-                          ),
-                      },
-                      {
-                          role: 'unhide',
-                          label: get(
-                              translations,
-                              ['appMenu', 'unhide'],
-                              'Unhide'
-                          ),
-                      },
-                      { type: 'separator' },
-                      {
-                          role: 'quit',
-                          label: get(translations, ['appMenu', 'quit'], 'Quit'),
-                      },
-                  ],
-              }
+                label: app.getName(),
+                submenu: [
+                    {
+                        role: 'about',
+                        label: get(
+                            translations,
+                            ['appMenu', 'about'],
+                            'About',
+                        ),
+                    },
+                    { type: 'separator' },
+                    {
+                        role: 'services',
+                        label: get(
+                            translations,
+                            ['appMenu', 'services'],
+                            'Services',
+                        ),
+                    },
+                    { type: 'separator' },
+                    {
+                        role: 'hide',
+                        label: get(translations, ['appMenu', 'hide'], 'Hide'),
+                    },
+                    {
+                        role: 'hideOthers',
+                        label: get(
+                            translations,
+                            ['appMenu', 'hideothers'],
+                            'Hide others',
+                        ),
+                    },
+                    {
+                        role: 'unhide',
+                        label: get(
+                            translations,
+                            ['appMenu', 'unhide'],
+                            'Unhide',
+                        ),
+                    },
+                    { type: 'separator' },
+                    {
+                        role: 'quit',
+                        label: get(translations, ['appMenu', 'quit'], 'Quit'),
+                    },
+                ],
+            }
             : {
-                  label: get(translations, ['appMenu', 'file'], 'File'),
-                  submenu: [
-                      {
-                          role: 'quit',
-                          label: get(translations, ['appMenu', 'quit'], 'Quit'),
-                      },
-                  ],
-              }
+                label: get(translations, ['appMenu', 'file'], 'File'),
+                submenu: [
+                    {
+                        role: 'quit',
+                        label: get(translations, ['appMenu', 'quit'], 'Quit'),
+                    },
+                ],
+            },
     );
 
     menu = Menu.buildFromTemplate(template);
@@ -390,42 +398,49 @@ function setAboutPanel(_translations: any = defaultTranslations.default.en) {
 
 function createWindow() {
     // Create the browser window.
-    const mainOpts = {
+    const mainOpts: Electron.BrowserWindowConstructorOptions = {
         width: 800,
         height: 600,
         title: 'ETCD Manager',
         icon: join(__static, '/icons/64x64.png'),
         webPreferences: {
             nodeIntegration: true,
+            contextIsolation: false,
+            sandbox: false,
         },
     };
 
-    const config: Splashscreen.Config = {
-        windowOpts: mainOpts,
-        templateUrl: `${__static}/splash.html`,
-        minVisible: 2000,
-        splashScreenOpts: {
-            width: 800,
-            height: 600,
-        },
-    };
-
-    win = Splashscreen.initSplashScreen(config);
+    // Use splash screen only in production, skip in development for faster iteration
+    if (isDevelopment) {
+        win = new BrowserWindow(mainOpts);
+    } else {
+        const config: Splashscreen.Config = {
+            windowOpts: mainOpts,
+            templateUrl: `${__static}/splash.html`,
+            minVisible: 2000,
+            splashScreenOpts: {
+                width: 800,
+                height: 600,
+            },
+        };
+        win = Splashscreen.initSplashScreen(config);
+    }
     win.setTitle('ETCD Manager');
+
+    // Enable @electron/remote for this window
+    remoteMain.enable(win.webContents);
+
     win.on('page-title-updated', (e) => {
         e.preventDefault();
     });
 
-    if (process.env.WEBPACK_DEV_SERVER_URL) {
+    if (process.env.VITE_DEV_SERVER_URL) {
         // Load the url of the dev server if in development mode
-        win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
-        if (!process.env.IS_TEST) {
-            win.webContents.openDevTools();
-        }
+        win.loadURL(process.env.VITE_DEV_SERVER_URL);
+        // DevTools opened manually via View menu or Ctrl+Shift+I
     } else {
-        createProtocol('app');
         // Load the index.html when not in development
-        win.loadURL('app://./index.html');
+        win.loadFile(join(__dirname, '../dist/index.html'));
         autoUpdater.checkForUpdatesAndNotify();
     }
 
@@ -442,7 +457,7 @@ ipcMain.on('ssl_file_check', (_event: any, cert: string, id: string) => {
             fileName: cert,
         });
     } catch (e) {
-        throw e;
+        win.webContents.send('error-notification', 'common.messages.invalidFileError');
     }
 });
 ipcMain.on('ssl_dialog_open', (_event: any, id: string) => {
@@ -458,11 +473,10 @@ ipcMain.on('ssl_dialog_open', (_event: any, id: string) => {
                 fileName: saveTo[0],
             });
         } catch (e) {
-            throw e;
+            win.webContents.send('error-notification', 'common.messages.invalidFileError');
         }
     }
 });
-
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -485,14 +499,8 @@ app.on('activate', () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
-    if (isDevelopment && !process.env.IS_TEST) {
-        // Install Vue Devtools
-        try {
-            await installVueDevtools();
-        } catch (e) {
-            console.error('Vue Devtools failed to install:', e.toString());
-        }
-    }
+    // Vue DevTools installation disabled - causes renderer.bundle.js errors in Electron 35
+    // See: https://github.com/MarshallOfSound/electron-devtools-installer/issues/220
     createAppMenu(defaultTranslations.default.en);
     setAboutPanel();
     createWindow();
@@ -502,7 +510,7 @@ app.on('ready', async () => {
         (_event: any, translations: any, disabledMap: GenericObject) => {
             createAppMenu(translations, disabledMap);
             setAboutPanel(translations);
-        }
+        },
     );
 
     ipcMain.on('whatsnew-load', () => {

@@ -1,16 +1,13 @@
-import { WatcherAction, DataService } from './../../types/index';
 import {
     Etcd3, Watcher, EtcdError,
 } from 'etcd3';
-import * as RPC from 'etcd3/lib/src/rpc';
-import EtcdService from './etcd.service';
-import { WatcherEntry } from '../../types';
+import * as RPC from 'etcd3/lib/rpc';
 import store from '@/store';
 import Messages from '@/lib/messages';
-
+import EtcdService from './etcd.service';
+import { WatcherEntry, WatcherAction, DataService } from '../../types';
 
 export default class WatcherService extends EtcdService implements DataService {
-
     constructor(private ls: any, client?: Etcd3) {
         super(client);
     }
@@ -18,18 +15,18 @@ export default class WatcherService extends EtcdService implements DataService {
     private getMessage(event: string, ...args: any): string {
         const date = new Date().toISOString();
         switch (event) {
-            case 'put':
-                return `${date}: The key "${args[0]}" has been changed. New value: "${args[1]}"`;
-            case 'delete':
-                return `${date} The key "${args[0]}" has been deleted.`;
-            case 'connected':
-                return `${date} The watcher ${args[0]} has been successfully reconnected!""`;
-            case 'end':
-                return `${date} A watcher has been closed!""`;
-            case 'disconnected':
-                return `${date} A watcher has been disconnected. Error: ${args[0]}""`;
-            case 'error':
-                return `${date} Error: ${args[0]}""`;
+        case 'put':
+            return `${date}: The key "${args[0]}" has been changed. New value: "${args[1]}"`;
+        case 'delete':
+            return `${date}: The key "${args[0]}" has been deleted.`;
+        case 'connected':
+            return `${date}: The watcher ${args[0]} has been successfully reconnected!`;
+        case 'end':
+            return `${date}: A watcher has been closed!`;
+        case 'disconnected':
+            return `${date}: A watcher has been disconnected. Error: ${args[0]}`;
+        case 'error':
+            return `${date}: Error: ${args[0]}`;
         }
         return '';
     }
@@ -42,7 +39,6 @@ export default class WatcherService extends EtcdService implements DataService {
         } if (outputType === 2) {
             return new Notification('Attention!', {
                 lang: 'en',
-                timestamp: Date.now(),
                 body: message,
                 requireInteraction: true,
                 icon: './assets/etcd-glyph-color.png',
@@ -57,40 +53,43 @@ export default class WatcherService extends EtcdService implements DataService {
                     event,
                     kv.key.toString(),
                     kv.value.toString(),
-                    previous ? previous.value.toString() : '');
+                    previous ? previous.value.toString() : '',
+                );
                 this.generateOutput(msg, outputType);
             };
         } if (event === 'connected') {
             return (res: RPC.IWatchResponse) => {
                 const msg = this.getMessage(
                     event,
-                    res.watch_id);
+                    res.watch_id,
+                );
                 this.generateOutput(msg, outputType);
             };
         } if (event === 'error' || event === 'disconnected') {
             return (error: EtcdError) => {
                 const msg = this.getMessage(
                     event,
-                    error.message);
+                    error.message,
+                );
                 this.generateOutput(msg, outputType);
             };
         }
     }
 
     public async activateWatcher(
-        watcher: WatcherEntry
+        watcher: WatcherEntry,
     ): Promise<any> {
         let watcherStream: Watcher | null = null;
         try {
             watcherStream = await this.createWatcher(watcher);
         } catch (e) {
-            Messages.error(e);
-            return Promise.reject(new Error(e));
+            store.commit('message', Messages.error(String(e)));
+            return Promise.reject(new Error(String(e)));
         }
 
         watcherStream = this.registerWatcherEvents(
             watcherStream as Watcher,
-            watcher.actions
+            watcher.actions,
         );
         store.commit('watcher', {
             key: watcher.name,
@@ -108,7 +107,7 @@ export default class WatcherService extends EtcdService implements DataService {
 
     public saveWatcher(watcher: WatcherEntry, isCreate: boolean = false): boolean {
         const watchers = this.listWatchers();
-        const watcherIndex = watchers.findIndex(w => w.name === watcher.name);
+        const watcherIndex = watchers.findIndex((w) => w.name === watcher.name);
 
         if (isCreate && watcherIndex !== -1) {
             return false;
@@ -122,7 +121,6 @@ export default class WatcherService extends EtcdService implements DataService {
 
         this.ls.set('watchers', JSON.stringify(watchers));
         return true;
-
     }
 
     public createWatcher(watcher: WatcherEntry): Promise<Watcher> {
@@ -137,11 +135,9 @@ export default class WatcherService extends EtcdService implements DataService {
     }
 
     public registerWatcherEvents(watcher: Watcher, actions: WatcherAction[]): Watcher {
-
         actions.forEach((action) => {
             watcher.on(action.event.name as 'put', this.handleEvent(action.event.name, action.action.value));
         });
-
 
         if (store.state.watchers.disconnects) {
             watcher.on('disconnected', this.handleEvent('disconnected', 0));
@@ -155,7 +151,6 @@ export default class WatcherService extends EtcdService implements DataService {
             watcher.on('error', this.handleEvent('error', 0));
         }
 
-
         return watcher;
     }
 
@@ -165,20 +160,12 @@ export default class WatcherService extends EtcdService implements DataService {
     }
 
     public remove(toRemove: string[]): Promise<any> {
-        const watchers = this.listWatchers().filter((watcher) => {
-            return !toRemove.includes(watcher.name);
-        });
+        const watchers = this.listWatchers().filter((watcher) => !toRemove.includes(watcher.name));
         this.ls.set('watchers', JSON.stringify(watchers));
         return Promise.resolve(true);
-
     }
 
     public loadWatcher(name: string): WatcherEntry {
-        return this.listWatchers().find((watcher) => {
-            return watcher.name === name;
-        }) as WatcherEntry;
-
+        return this.listWatchers().find((watcher) => watcher.name === name) as WatcherEntry;
     }
-
-
 }

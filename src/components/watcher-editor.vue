@@ -402,14 +402,14 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import { GenericObject, WatcherAction, WatcherEntry } from '../../types';
 import { required, alphaNum } from 'vuelidate/lib/validators';
 import Messages from '@/lib/messages';
+import { Prop } from 'vue-property-decorator';
+import { v1 as uuidv1 } from 'uuid';
+import { GenericObject, WatcherAction, WatcherEntry } from '../../types';
 import { BaseEditor } from '../lib/editor.class';
 import WatcherService from '../services/watcher.service';
-import { Prop } from 'vue-property-decorator';
 import ActionEditor from './action-editor.vue';
-import uuidv1 from 'uuid/v1';
 
 @Component({
     name: 'watcher-editor',
@@ -447,10 +447,14 @@ export default class WatcherEditor extends BaseEditor {
         event: { name: 'put', value: 0, type: 2 },
     };
     public selected: GenericObject[] = [];
-    public name: string = this.data.name || '';
-    public key: string = this.data.key || '';
-    public prefix: boolean = this.data.prefix || false;
-    public actions: WatcherAction[] = this.data.actions || [];
+    // @ts-ignore TS2729
+    public name: string = this.data?.name || '';
+    // @ts-ignore TS2729
+    public key: string = this.data?.key || '';
+    // @ts-ignore TS2729
+    public prefix: boolean = this.data?.prefix || false;
+    // @ts-ignore TS2729
+    public actions: WatcherAction[] = this.data?.actions || [];
 
     public headers = [
         {
@@ -483,7 +487,7 @@ export default class WatcherEditor extends BaseEditor {
     created() {
         this.translateHeaders(
             'watcherEditor.actionList.columns.action',
-            'watcherEditor.actionList.columns.event'
+            'watcherEditor.actionList.columns.event',
         );
     }
 
@@ -540,8 +544,8 @@ export default class WatcherEditor extends BaseEditor {
         if (!action.id) {
             const exists = this.actions.find((act) => {
                 if (
-                    act.action.name === action.action.name &&
-                    act.event.name === action.event.name
+                    act.action.name === action.action.name
+                    && act.event.name === action.event.name
                 ) {
                     return true;
                 }
@@ -556,16 +560,17 @@ export default class WatcherEditor extends BaseEditor {
                     'message',
                     Messages.error(
                         'watcherEditor.messages.duplicateAction',
-                        true
-                    )
+                        true,
+                    ),
                 );
             }
         } else {
-            const current = this.actions.find((ac) => {
-                return action.id === ac.id;
-            });
-            Vue.set(current as WatcherAction, 'action', action.action);
-            Vue.set(current as WatcherAction, 'event', action.event);
+            const current = this.actions.find((ac) => action.id === ac.id);
+            if (!current) {
+                return;
+            }
+            Vue.set(current, 'action', action.action);
+            Vue.set(current, 'event', action.event);
             this.submit();
         }
         this.cancelAction();
@@ -578,9 +583,7 @@ export default class WatcherEditor extends BaseEditor {
     }
 
     deleteAction(actionToDelete: WatcherAction) {
-        this.actions = this.actions.filter((action) => {
-            return action.id !== actionToDelete.id;
-        });
+        this.actions = this.actions.filter((action) => action.id !== actionToDelete.id);
         if (this.actions.length) {
             this.submit();
         }
@@ -597,7 +600,7 @@ export default class WatcherEditor extends BaseEditor {
         const backend = new WatcherService(
             // @ts-ignore
             this.$ls,
-            this.$store.state.connection.getClient()
+            this.$store.state.connection.getClient(),
         );
 
         this.toggleLoading();
@@ -607,16 +610,16 @@ export default class WatcherEditor extends BaseEditor {
                 this.key,
                 this.prefix,
                 false,
-                this.actions
+                this.actions,
             ),
-            this.createMode
+            this.createMode,
         );
         this.toggleLoading();
 
         if (!res) {
             this.$store.commit(
                 'message',
-                Messages.error('watcherEditor.messages.duplicate', true)
+                Messages.error('watcherEditor.messages.duplicate', true),
             );
             return false;
         }

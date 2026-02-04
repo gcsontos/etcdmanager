@@ -217,9 +217,9 @@
 
 <script lang="ts">
 import Component from 'vue-class-component';
+import Messages from '@/lib/messages';
 import { CrudBase, List } from '../lib/crud.class';
 import UserService from '../services/user.service';
-import Messages from '@/lib/messages';
 import { GenericObject, EtcdUser } from '../../types';
 import UserEditor from './user-editor.vue';
 
@@ -265,7 +265,7 @@ export default class UserManager extends CrudBase implements List {
         } catch (error) {
             // @ts-ignore
             CrudBase.options.methods.editItem.call(this, item, false);
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
     }
 
@@ -275,7 +275,7 @@ export default class UserManager extends CrudBase implements List {
             await CrudBase.options.methods.confirmPurge.call(this);
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -284,13 +284,13 @@ export default class UserManager extends CrudBase implements List {
     public async confirmDelete(): Promise<UserManager> {
         try {
             // @ts-ignore
-            const result = await CrudBase.options.methods.confirmDelete.call(
+            await CrudBase.options.methods.confirmDelete.call(
                 this,
-                'name'
+                'name',
             );
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -302,7 +302,7 @@ export default class UserManager extends CrudBase implements List {
             this.data = await this.etcd.getUsers();
             this.loading = false;
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);

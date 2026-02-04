@@ -276,8 +276,8 @@ import {
     requiredIf,
 } from 'vuelidate/lib/validators';
 import Messages from '@/lib/messages';
-import { BaseEditor } from '../lib/editor.class';
 import { Prop } from 'vue-property-decorator';
+import { BaseEditor } from '../lib/editor.class';
 import { InputActionService } from '../services/input-action.service';
 import UserService from '../services/user.service';
 import RoleService from '../services/role.service';
@@ -285,7 +285,7 @@ import store from '../store';
 import { ValidationError } from '../lib/validation-error.class';
 
 // @ts-ignore
-class UserEditorError extends Error {
+class _UserEditorError extends Error {
     constructor(message: any) {
         super(message);
         this.name = 'UserEditorError';
@@ -301,17 +301,15 @@ class UserEditorError extends Error {
             alphaNum,
         },
         password: {
-            requiredIf: requiredIf((nestedModel) => {
-                return nestedModel.someFlag;
-            }),
+            requiredIf: requiredIf((nestedModel) => nestedModel.someFlag),
             sameAs: sameAs('pwcheck'),
             pwPattern: (value: string) => {
                 const ptrn = store.state.users.pattern;
                 return ptrn
                     ? new RegExp(ptrn).test(value)
-                    : /^[^\s]{8,16}$/gi.test(value) &&
-                          /[0-9]+/.test(value) &&
-                          /[A-Z]+/.test(value);
+                    : /^[^\s]{8,16}$/gi.test(value)
+                          && /[0-9]+/.test(value)
+                          && /[A-Z]+/.test(value);
             },
         },
     },
@@ -327,8 +325,9 @@ export default class UserEditor extends BaseEditor {
     };
     // @ts-ignore
     @Prop() mode: string;
+    // @ts-ignore TS2729
 
-    public name: string = this.data.name || '';
+    public name: string = this.data?.name || '';
     public password: string = '';
     public pwcheck: string = '';
     public showPassword: boolean = false;
@@ -343,10 +342,10 @@ export default class UserEditor extends BaseEditor {
         super();
         this.inputActionService = new InputActionService();
         this.roleService = new RoleService(
-            this.$store.state.connection.getClient()
+            this.$store.state.connection.getClient(),
         );
         this.userService = new UserService(
-            this.$store.state.connection.getClient()
+            this.$store.state.connection.getClient(),
         );
     }
 
@@ -403,7 +402,7 @@ export default class UserEditor extends BaseEditor {
             this.$store.commit('message', Messages.success());
             return Promise.resolve(this);
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
             this.toggleLoading();
         }
 
@@ -413,13 +412,11 @@ export default class UserEditor extends BaseEditor {
     public async created() {
         try {
             this.roles = await this.roleService.getRoles();
-            this.ownRoles = this.data.roles
-                ? this.data.roles.map((role) => {
-                      return role.name;
-                  })
+            this.ownRoles = this.data?.roles
+                ? this.data.roles.map((role) => role.name)
                 : [];
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         this.showRights = !this.createMode;
@@ -452,7 +449,7 @@ export default class UserEditor extends BaseEditor {
             this.focus('name');
             return Promise.resolve(this);
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
             this.toggleLoading();
         }
 

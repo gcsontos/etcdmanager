@@ -63,10 +63,10 @@
 
 <script lang='ts'>
 import Component from 'vue-class-component';
-import { GenericObject } from '../../types';
 import { required } from 'vuelidate/lib/validators';
-import { BaseEditor } from '../lib/editor.class';
 import { Prop } from 'vue-property-decorator';
+import { GenericObject } from '../../types';
+import { BaseEditor } from '../lib/editor.class';
 
 @Component({
     name: 'action-editor',
@@ -87,7 +87,7 @@ export default class ActionEditor extends BaseEditor {
 
     // @ts-ignore
     @Prop() data: {
-        id: Symbol;
+        id: symbol;
         action: GenericObject;
         event: GenericObject;
     };
@@ -101,9 +101,12 @@ export default class ActionEditor extends BaseEditor {
     }
 
     public action: GenericObject = {
-        id: this.data.id,
-        action: this.data.action,
-        event: this.data.event,
+        // @ts-ignore TS2729
+        id: this.data?.id || '',
+        // @ts-ignore TS2729
+        action: this.data?.action || '',
+        // @ts-ignore TS2729
+        event: this.data?.event || '',
     };
 
     public actions: GenericObject[] = [

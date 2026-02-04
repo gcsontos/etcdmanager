@@ -72,7 +72,7 @@ export default {
         common: {
             help: {
                 tooltip: 'Mutassa a segtítség panelt',
-                infoTitle: `Tudta?`,
+                infoTitle: 'Tudta?',
                 tabs: {
                     info: 'Info',
                     shortcuts: 'Gyorsbillentyűk',

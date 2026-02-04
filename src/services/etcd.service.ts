@@ -24,15 +24,7 @@ export default class EtcdService {
         if (this.client) {
             this.client.close();
         }
-        try {
-            this.client = new Etcd3(options);
-        } catch (e) {
-            throw e;
-        }
-
+        this.client = new Etcd3(options);
         return this;
     }
-
-
-
 }

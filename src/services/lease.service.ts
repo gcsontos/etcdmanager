@@ -1,21 +1,17 @@
-import { GenericObject } from './../../types/index';
 import {
     Etcd3, ILeaseTimeToLiveResponse, ILeaseRevokeResponse,
 } from 'etcd3';
+import { GenericObject } from '../../types/index';
 import EtcdService from './etcd.service';
 
 export default class LeaseService extends EtcdService {
-
     constructor(client?: Etcd3) {
         super(client);
     }
 
     public async getLeases(): Promise<GenericObject[]> {
         const res = await this.client.leaseClient.leaseLeases();
-        return Promise.resolve(res.leases.map((lease: any) => {
-            return { ID: lease.ID }
-        }));
-
+        return Promise.resolve(res.leases.map((lease: any) => ({ ID: lease.ID })));
     }
 
     public async loadLease(leaseId: string): Promise<ILeaseTimeToLiveResponse> {
@@ -45,7 +41,6 @@ export default class LeaseService extends EtcdService {
         }
     }
 
-
     public remove(leaseIds: number[]): Promise<ILeaseRevokeResponse[]> {
         const promises: Promise<ILeaseRevokeResponse>[] = [];
         leaseIds.forEach((leaseId) => {
@@ -55,5 +50,4 @@ export default class LeaseService extends EtcdService {
         });
         return Promise.all(promises);
     }
-
 }

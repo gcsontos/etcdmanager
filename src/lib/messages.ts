@@ -1,9 +1,9 @@
-import { i18n } from '@/main';
+import { i18n } from '@/i18n';
 
 export default class Messages {
     public static error(error: string, translate: boolean = false) {
         return {
-            text:  `${i18n.t('common.messages.error')}.
+            text: `${i18n.t('common.messages.error')}.
             Error: ${translate ? i18n.t(error) : error}`,
             color: 'error',
             show: true,
@@ -24,5 +24,4 @@ export default class Messages {
             show: true,
         };
     }
-
 }

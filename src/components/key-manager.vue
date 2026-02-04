@@ -682,13 +682,15 @@
 <script lang="ts">
 import Component from 'vue-class-component';
 import Messages from '@/lib/messages';
-import { GenericObject, EtcdItem, EtcdKey, TreeNodeType } from '../../types';
-import KeyEditor from './key-editor.vue';
-import KeyService from '../services/key.service';
-import { CrudBase, List } from '../lib/crud.class';
 import { set as _set, get as _get } from 'lodash-es';
 import * as Tree from 'list-to-tree';
 import { required } from 'vuelidate/lib/validators';
+import {
+    GenericObject, EtcdItem, EtcdKey, TreeNodeType,
+} from '../../types';
+import KeyEditor from './key-editor.vue';
+import KeyService from '../services/key.service';
+import { CrudBase, List } from '../lib/crud.class';
 
 // @ts-ignore
 @Component({
@@ -752,7 +754,7 @@ export default class KeyManager extends CrudBase implements List {
         this.defaultItem = new EtcdKey();
         this.translateHeaders(
             'keyManager.columns.key',
-            'keyManager.columns.value'
+            'keyManager.columns.value',
         );
 
         const loader = (data: any) => {
@@ -786,7 +788,7 @@ export default class KeyManager extends CrudBase implements List {
         } catch (error) {
             // @ts-ignore
             CrudBase.options.methods.editItem.call(this, item, false);
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -794,7 +796,7 @@ export default class KeyManager extends CrudBase implements List {
 
     public async touch(
         item: EtcdItem | null,
-        selection: boolean = false
+        selection: boolean = false,
     ): Promise<KeyManager> {
         if (selection && !this.hasSelection()) {
             this.noSelection = true;
@@ -810,7 +812,7 @@ export default class KeyManager extends CrudBase implements List {
             this.toggleLoading();
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
             this.toggleLoading();
         }
 
@@ -823,7 +825,7 @@ export default class KeyManager extends CrudBase implements List {
             await CrudBase.options.methods.confirmPurge.call(this);
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -832,13 +834,13 @@ export default class KeyManager extends CrudBase implements List {
     public async confirmDelete(): Promise<KeyManager> {
         try {
             // @ts-ignore
-            const result = await CrudBase.options.methods.confirmDelete.call(
+            await CrudBase.options.methods.confirmDelete.call(
                 this,
-                'key'
+                'key',
             );
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return this;
@@ -848,16 +850,14 @@ export default class KeyManager extends CrudBase implements List {
         this.loading = true;
         try {
             const data = await this.etcd.loadAllKeys(prefix);
-            this.data = Object.entries(data).map((entry) => {
-                return {
-                    key: entry[0],
-                    value: this.shortenText(entry[1] as string, true),
-                    tooltip: entry[1],
-                };
-            });
+            this.data = Object.entries(data).map((entry) => ({
+                key: entry[0],
+                value: this.shortenText(entry[1] as string, true),
+                tooltip: entry[1],
+            }));
             this.loading = false;
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
         this.loadTree();
 
@@ -890,7 +890,7 @@ export default class KeyManager extends CrudBase implements List {
 
     public getViewType() {
         return this.$t(
-            `keyManager.actions.${this.isTreeView() ? 'flat' : 'tree'}View`
+            `keyManager.actions.${this.isTreeView() ? 'flat' : 'tree'}View`,
         );
     }
 
@@ -931,7 +931,7 @@ export default class KeyManager extends CrudBase implements List {
 
                 const parentId: { nodeId: number } = _get(
                     keyMap,
-                    keys.slice(0, i)
+                    keys.slice(0, i),
                 );
 
                 object.parent = 0;
@@ -941,9 +941,8 @@ export default class KeyManager extends CrudBase implements List {
 
                 if (
                     !tmp.find(
-                        (node: TreeNodeType) =>
-                            node.name === object.name &&
-                            node.parent === object.parent
+                        (node: TreeNodeType) => node.name === object.name
+                            && node.parent === object.parent,
                     )
                 ) {
                     tmp.push(object);

@@ -32,7 +32,18 @@ Please note that currently ETCD V2 API **is not** supported! At the moment, we s
 
 ## Features
 
-### Available now (v1.2)
+### Available now (v1.2.1)
+
+This is a maintenance release focused on modernizing the build system and improving Node.js compatibility:
+
+- **Build system migration**: Migrated from Vue CLI + webpack 4 to Vite for faster builds and better maintainability
+- **Node.js 22 support**: Full compatibility with Node.js 22+ (no longer requires `NODE_OPTIONS=--openssl-legacy-provider`)
+- **Electron 35**: Upgraded to Electron 35 with Node.js 22.14.0 runtime
+- **Security fixes**: Updated marked package to address CVE-2021-21306, CVE-2022-21680, CVE-2022-21681
+- **Improved error handling**: Better error handling in SSL certificate loading and IPC handlers
+- **Bug fixes**: Fixed various Vue component warnings and prop handling issues
+
+### Available in v1.2
 
 Currently, the following features are implemented:
 
@@ -97,15 +108,15 @@ A better organized overview of these plans will be available soon. Stay tuned :)
 
 ### End users..
 
-The current stable (prod) version is 1.2. It's available for **Mac OS X (10.15.5 Catalina+)**, **MS Windows (7, 8, 10+)** and some major **Linux distros (Ubuntu 10.04+, Arch etc)**. The following are pre-built binaries and this is the recommended way to install. 
+The current stable (prod) version is 1.2.1. It's available for **Mac OS X (10.15.5 Catalina+)**, **MS Windows (7, 8, 10+)** and some major **Linux distros (Ubuntu 10.04+, Arch etc)**. The following are pre-built binaries and this is the recommended way to install. 
 
 If you are using a more or less recent major Linux distro (Ubuntu, Redhat, Suse etc), or Ubuntu LTS or some up-to-date rolling release distro like Arch, everything should work fine. Most older Linux systems should be supported as well. However, **very old** Linux versions might not work as expected. If you have difficulties installing the app, please report the problem using our issue tracker. 
 
 Grab one now:
 
-- [Windows](https://github.com/i-Cell-Mobilsoft-Open-Source/etcdmanager/releases/download/1.2.0/etcd-manager-1.2.0-win64.exe)
-- [MacOS](https://github.com/i-Cell-Mobilsoft-Open-Source/etcdmanager/releases/download/1.2.0/etcd-manager-1.2.0-osx.dmg)
-- [Linux](https://github.com/i-Cell-Mobilsoft-Open-Source/etcdmanager/releases/download/1.2.0/etcd-manager-1.2.0-linux.AppImage)
+- [Windows](https://github.com/gcsontos/etcdmanager/releases/download/1.2.1/etcd-manager-1.2.1-win64.exe)
+- [MacOS](https://github.com/gcsontos/etcdmanager/releases/download/1.2.1/etcd-manager-1.2.1-osx.dmg)
+- [Linux](https://github.com/gcsontos/etcdmanager/releases/download/1.2.1/etcd-manager-1.2.1-linux.AppImage)
 
 Other packages are available for download as well, please see the [releases](https://github.com/icellmobilsoft/etcdmanager/releases) page.
 
@@ -123,16 +134,13 @@ snap install etcd-manager
 You may install the dev version by cloning this repository.
 
 ```
-git clone https://github.com/i-Cell-Mobilsoft-Open-Source/etcdmanager.git
+git clone https://github.com/gcsontos/etcdmanager.git
 ```
 
 Or you may also install the NPM package (although this is ***not recommended***, since the package might not contain the latest code).
 
-First of all, you must install Yarn. Please see [this page](https://classic.yarnpkg.com/en/docs/install) for details.
-
-
 ```
-yarn add etcd-manager
+npm install etcd-manager
 cd node_modules/etcd-manager
 ```
 
@@ -140,31 +148,23 @@ Please also check out the [contribution guide](./CONTRIBUTING.md) before writing
 
 ### Running the dev build
 
+**Requirements**: Node.js 22+ is required.
+
 Once you have the code, simply execute the following commands:
 
 ```
-yarn install
+npm install --legacy-peer-deps
 ```
 
-The next step is to compile the GRPC Node extension. This requires the usual build tools (gcc, make etc) to be installed. Make sure you have these, then run:
+Then start the dev server:
 
 ```
-npm rebuild --target=ELECTRON_VERSION --runtime=electron --dist-url=https://atom.io/download/electron
+npm run electron:serve
 ```
 
-... where ELECTRON_VERSION is the **exact** version number of the Electron framework the app uses. You can determine this by running:
+This will start a dev build with hot reload and the app should appear shortly.
 
-```
-yarn list electron
-```
-
-Finally, start the dev server in the following way:
-
-```
-yarn electron:serve
-```
-
-This will start a dev build and the app should appear shortly.
+**Note**: Unlike previous versions, no native module compilation is required. The project uses `@grpc/grpc-js` (pure JavaScript GRPC implementation) which works out of the box.
 
 ## Usage and support
 
@@ -186,7 +186,7 @@ If you've installed the app using the Windows or Mac installer or the Linux AppI
 
 Otherwise, you have to download and install the new version manually.
 
-As for the dev version, you may update that by the usual means (Yarn or Git). In any case, please read our [changelog](./CHANGELOG.md) for an overview of the most recent changes.
+As for the dev version, you may update that by the usual means (npm or Git). In any case, please read our [changelog](./CHANGELOG.md) for an overview of the most recent changes.
 
 ## Bugs and feature requests
 

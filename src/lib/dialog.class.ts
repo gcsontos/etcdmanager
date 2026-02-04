@@ -5,7 +5,6 @@ import Mousetrap from 'mousetrap';
 @Component({
 })
 export default class Dialog extends Vue {
-
     mounted() {
         // @ts-ignore
         const keyboardEvents = new Mousetrap();

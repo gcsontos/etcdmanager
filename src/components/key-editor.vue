@@ -395,15 +395,15 @@ import {
     minValue,
 } from 'vuelidate/lib/validators';
 import Messages from '@/lib/messages';
+import { Prop } from 'vue-property-decorator';
 import { RevisionListType } from '../../types';
 import KeyService from '../services/key.service';
 import { BaseEditor } from '../lib/editor.class';
 import { ValidationError } from '../lib/validation-error.class';
-import { Prop } from 'vue-property-decorator';
 import 'mousetrap/plugins/global-bind/mousetrap-global-bind';
 
 // @ts-ignore
-class KeyError extends Error {
+class _KeyError extends Error {
     constructor(message: any) {
         super(message);
         this.name = 'KeyError';
@@ -447,9 +447,10 @@ export default class KeyEditor extends BaseEditor {
     };
     // @ts-ignore
     @Prop() mode: string;
-
-    public key: string = this.data.key || '';
-    public value: string = this.data.value || '';
+    // @ts-ignore TS2729
+    public key: string = this.data?.key || '';
+    // @ts-ignore TS2729
+    public value: string = this.data?.value || '';
     public ttl: string = '0';
     public showRevs: number | null = null;
 
@@ -509,7 +510,7 @@ export default class KeyEditor extends BaseEditor {
             'keyEditor.columns.version',
             'keyEditor.columns.type',
             'keyEditor.columns.createRev',
-            'keyEditor.columns.modRev'
+            'keyEditor.columns.modRev',
         );
     }
 
@@ -557,7 +558,7 @@ export default class KeyEditor extends BaseEditor {
             errors.push(this.$t('keyEditor.messages.integerTtl').toString());
         } else if (!this.$v.ttl.maxValue) {
             errors.push(
-                this.$t('keyEditor.messages.maxValue', { max: 9000000000 })
+                this.$t('keyEditor.messages.maxValue', { max: 9000000000 }),
             );
         } else if (!this.$v.ttl.minValue) {
             errors.push(this.$t('keyEditor.messages.minValue').toString());
@@ -568,11 +569,11 @@ export default class KeyEditor extends BaseEditor {
 
     public numbersOnly(e: KeyboardEvent) {
         if (
-            !'0123456789'.includes(e.key) &&
-            e.keyCode !== 8 &&
-            e.keyCode !== 46 &&
-            e.keyCode !== 37 &&
-            e.keyCode !== 39
+            !'0123456789'.includes(e.key)
+            && e.keyCode !== 8
+            && e.keyCode !== 46
+            && e.keyCode !== 37
+            && e.keyCode !== 39
         ) {
             e.preventDefault();
             e.stopImmediatePropagation();
@@ -601,7 +602,7 @@ export default class KeyEditor extends BaseEditor {
                 this.key,
                 this.value,
                 this.ttl,
-                this.createMode
+                this.createMode,
             );
             this.toggleLoading();
             if (res.succeeded === true || res.succeeded === undefined) {
@@ -617,12 +618,12 @@ export default class KeyEditor extends BaseEditor {
                 this.$store.commit(
                     'message',
                     Messages.error(
-                        this.$t('keyEditor.messages.duplicateKey').toString()
-                    )
+                        this.$t('keyEditor.messages.duplicateKey').toString(),
+                    ),
                 );
             }
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
             this.toggleLoading();
         }
 

@@ -80,7 +80,7 @@ export default {
             },
             help: {
                 tooltip: 'Show help panel',
-                infoTitle: `Did you know?`,
+                infoTitle: 'Did you know?',
                 tabs: {
                     info: 'Info',
                     shortcuts: 'Keyboard shortcuts',

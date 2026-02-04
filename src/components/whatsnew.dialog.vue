@@ -37,6 +37,7 @@ import Component from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 import Dialog from '../lib/dialog.class';
 import { LocalStorageService } from '../services/local-storage.service';
+
 const { ipcRenderer } = require('electron');
 
 @Component({

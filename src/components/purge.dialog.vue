@@ -14,7 +14,6 @@
   </v-dialog>
 </template>
 
-
 <script lang="ts">
 import Component from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
@@ -28,7 +27,6 @@ export default class PurgeDialog extends Dialog {
     @Prop() open: boolean;
     // @ts-ignore
     @Prop() itemName: string;
-
 }
 </script>
 

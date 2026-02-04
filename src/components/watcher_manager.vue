@@ -260,12 +260,13 @@
 
 <script lang="ts">
 import Component from 'vue-class-component';
+import Messages from '@/lib/messages';
 import { WatcherEntry, GenericObject } from '../../types';
 import WatcherService from '../services/watcher.service';
 import { CrudBase, List } from '../lib/crud.class';
 import WatcherEditor from './watcher-editor.vue';
-import Messages from '@/lib/messages';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class WatcherManagerError extends Error {
     constructor(message: any) {
         super(message);
@@ -305,7 +306,7 @@ export default class WatcherManager extends CrudBase implements List {
         this.etcd = new WatcherService(
             // @ts-ignore
             this.$ls,
-            this.$store.state.connection.getClient()
+            this.$store.state.connection.getClient(),
         );
     }
 
@@ -320,14 +321,14 @@ export default class WatcherManager extends CrudBase implements List {
         this.translateHeaders(
             'watcherManager.columns.name',
             'watcherManager.columns.key',
-            'watcherManager.columns.prefix'
+            'watcherManager.columns.prefix',
         );
     }
 
     private async deactivateWatcher(
-        watcher: WatcherEntry
+        watcher: WatcherEntry,
     ): Promise<WatcherManager | WatcherManagerError> {
-        const listeners = this.$store.state.listeners;
+        const { listeners } = this.$store.state;
         const listener = listeners.get(watcher.name);
         if (listener) {
             try {
@@ -335,26 +336,26 @@ export default class WatcherManager extends CrudBase implements List {
                 watcher.activated = false;
                 this.$store.commit('watcher', { key: watcher.name, op: 'del' });
             } catch (e) {
-                this.$store.commit('message', Messages.error(e));
+                this.$store.commit('message', Messages.error(String(e)));
             }
         }
         return Promise.resolve(this);
     }
 
     public async activateWatcher(
-        watcher: WatcherEntry
+        watcher: WatcherEntry,
     ): Promise<WatcherManager | WatcherManagerError> {
         try {
             await this.etcd.activateWatcher(watcher);
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         return Promise.resolve(this);
     }
 
     private async unregisterWatchers(
-        toBeRemoved: string[]
+        toBeRemoved: string[],
     ): Promise<WatcherManager | WatcherManagerError> {
         try {
             for (const watcherName of toBeRemoved) {
@@ -368,7 +369,7 @@ export default class WatcherManager extends CrudBase implements List {
                 }
             }
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         return Promise.resolve(this);
@@ -404,7 +405,7 @@ export default class WatcherManager extends CrudBase implements List {
             await this.load();
             this.$store.commit('message', Messages.success());
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -415,7 +416,7 @@ export default class WatcherManager extends CrudBase implements List {
             this.noSelection = false;
             const watcherNames = this.getSelectedKeys('name');
             for (const name of watcherNames) {
-                const watcher = this.watchers.find(w => w.name === name);
+                const watcher = this.watchers.find((w) => w.name === name);
                 if (watcher && watcher.activated) {
                     await this.deactivateWatcher(watcher as WatcherEntry);
                 } else {
@@ -441,7 +442,7 @@ export default class WatcherManager extends CrudBase implements List {
             this.$store.commit('message', Messages.success());
             await this.unregisterWatchers(toBeRemoved);
         } catch (error) {
-            this.$store.commit('message', Messages.error(error));
+            this.$store.commit('message', Messages.error(String(error)));
         }
 
         return Promise.resolve(this);
@@ -457,7 +458,6 @@ export default class WatcherManager extends CrudBase implements List {
         };
         return Promise.resolve(this);
     }
-
 }
 </script>
 

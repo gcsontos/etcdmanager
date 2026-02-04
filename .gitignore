@@ -31,3 +31,6 @@ yarn-error.log*
 #Electron-builder output
 /dist_electron
 /default.etcd
+
+# Package manager lock files (project uses yarn)
+package-lock.json

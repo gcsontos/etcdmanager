@@ -22,8 +22,8 @@ export class AuthService {
 
     public async isRoot() {
         return Promise.resolve((
-            store.state.etcdAuth.username === 'root' ||
-            (await this.hasRole('root'))
+            store.state.etcdAuth.username === 'root'
+            || (await this.hasRole('root'))
         ));
     }
 

@@ -308,11 +308,14 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import StatsService from '../services/stats.service';
 import { IMember, IAlarmResponse, IStatusResponse } from 'etcd3';
+import Mousetrap from 'mousetrap';
+import StatsService from '../services/stats.service';
 import Messages from '../lib/messages';
 import { GenericObject } from '../../types';
 import { PlatformService } from '../services/platform.service';
+
+type ExtendedKeyboardEvent = Mousetrap.ExtendedKeyboardEvent;
 
 @Component({
     name: 'health-check',
@@ -323,9 +326,9 @@ export default class HealthCheck extends Vue {
         members: IMember[];
         header: GenericObject;
     } = {
-        members: [],
-        header: {},
-    };
+            members: [],
+            header: {},
+        };
     public health: {
         [key: string]: IAlarmResponse;
     } = {};
@@ -388,7 +391,7 @@ export default class HealthCheck extends Vue {
             const res = await this.etcd.listMembers();
             this.data = res;
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
     }
 }

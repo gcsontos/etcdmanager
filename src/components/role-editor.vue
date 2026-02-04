@@ -271,17 +271,17 @@
 
 <script lang='ts'>
 import Component from 'vue-class-component';
-import { GenericObject, PermissionObject } from '../../types';
 import { required, alphaNum } from 'vuelidate/lib/validators';
 import Messages from '@/lib/messages';
+import { Prop } from 'vue-property-decorator';
+import { GenericObject, PermissionObject } from '../../types';
 import { BaseEditor } from '../lib/editor.class';
 import RoleService from '../services/role.service';
-import { Prop } from 'vue-property-decorator';
 import PermissionEditor from './permission-editor.vue';
 import { ValidationError } from '../lib/validation-error.class';
 
 // @ts-ignore
-class RoleEditorError extends Error {
+class _RoleEditorError extends Error {
     constructor(message: any) {
         super(message);
         this.name = 'RoleEditorError';
@@ -312,8 +312,10 @@ export default class RoleEditor extends BaseEditor {
     public itemType: string = 'role';
     public permissionDialog: boolean = false;
     public roleExists: boolean = false;
+    // @ts-ignore TS2729
     public selected: GenericObject[] = [];
-    public name: string = this.data.name || '';
+    // @ts-ignore TS2729
+    public name: string = this.data?.name || '';
     public currentPermission: PermissionObject;
     public defaultPermission: PermissionObject = {
         key: '',
@@ -361,7 +363,7 @@ export default class RoleEditor extends BaseEditor {
         this.translateHeaders(
             'roleEditor.columns.key',
             'roleEditor.columns.permission',
-            'roleEditor.columns.prefix'
+            'roleEditor.columns.prefix',
         );
     }
 
@@ -400,8 +402,7 @@ export default class RoleEditor extends BaseEditor {
         try {
             const permissions = await this.etcd.rolePermissions(this.name);
             this.permissions = permissions.map((perm) => {
-                const all: boolean =
-                    perm.range.start[0] === 0 && perm.range.end[0] === 0;
+                const all: boolean = perm.range.start[0] === 0 && perm.range.end[0] === 0;
                 return {
                     key: all
                         ? this.$t('roleEditor.fields.allKeys.label').toString()
@@ -412,7 +413,7 @@ export default class RoleEditor extends BaseEditor {
                 };
             });
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         return Promise.resolve(this);
@@ -437,7 +438,7 @@ export default class RoleEditor extends BaseEditor {
             await this.loadPermissions();
             this.cancelPermission();
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         return Promise.resolve(this);
@@ -451,7 +452,7 @@ export default class RoleEditor extends BaseEditor {
     }
 
     public async revokePermission(
-        permission: PermissionObject
+        permission: PermissionObject,
     ): Promise<RoleEditor> {
         try {
             this.toggleLoading();
@@ -467,7 +468,7 @@ export default class RoleEditor extends BaseEditor {
             this.toggleLoading();
             this.$store.commit('message', Messages.success());
         } catch (e) {
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
         this.focus('name');
         return Promise.resolve(this);
@@ -480,7 +481,7 @@ export default class RoleEditor extends BaseEditor {
         }
 
         const backend = new RoleService(
-            this.$store.state.connection.getClient()
+            this.$store.state.connection.getClient(),
         );
 
         try {
@@ -493,7 +494,7 @@ export default class RoleEditor extends BaseEditor {
             this.$v.$reset();
         } catch (e) {
             this.toggleLoading();
-            this.$store.commit('message', Messages.error(e));
+            this.$store.commit('message', Messages.error(String(e)));
         }
 
         this.focus('name');

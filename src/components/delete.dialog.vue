@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="open" persistent max-width="290">
+    <v-dialog :value="open" persistent max-width="290" @input="onDialogInput">
         <v-card dark>
             <v-toolbar dark flat>
                 <v-toolbar-title
@@ -37,10 +37,14 @@ import Dialog from '../lib/dialog.class';
     name: 'delete-dialog',
 })
 export default class DeleteDialog extends Dialog {
-    // @ts-ignore
-    @Prop() open: boolean;
-    // @ts-ignore
-    @Prop() itemName: string;
+    @Prop({ default: false }) open!: boolean;
+    @Prop({ default: '' }) itemName!: string;
+
+    public onDialogInput(value: boolean): void {
+        if (!value) {
+            this.cancel();
+        }
+    }
 }
 </script>
 

@@ -345,7 +345,11 @@ export default class HealthCheck extends Vue {
 
     constructor() {
         super();
-        this.etcd = new StatsService(this.$store.state.connection.getClient());
+        const client = this.$store.state.connection.getClient();
+        if (!client) {
+            console.warn('health.vue: No etcd client available yet');
+        }
+        this.etcd = new StatsService(client);
         this.platformService = new PlatformService();
     }
 
@@ -388,9 +392,12 @@ export default class HealthCheck extends Vue {
 
     private async fetchMembers() {
         try {
+            console.log('health.vue: fetchMembers called');
+            console.log('  client available:', !!this.etcd.getClient());
             const res = await this.etcd.listMembers();
             this.data = res;
         } catch (e) {
+            console.error('health.vue: fetchMembers error:', e);
             this.$store.commit('message', Messages.error(String(e)));
         }
     }

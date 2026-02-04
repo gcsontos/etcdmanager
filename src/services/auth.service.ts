@@ -9,7 +9,8 @@ export class AuthService {
     }
 
     public updateClient() {
-        return store.state.connection.getClient();
+        this.client = store.state.connection.getClient();
+        return this.client;
     }
 
     public getUser() {

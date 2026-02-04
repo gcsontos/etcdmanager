@@ -107,22 +107,22 @@ export default class App extends Vue {
         // @ts-ignore
         const config = this.configService.getConfig();
 
-        const replaceConfig = (cfg: any) => {
-            this.configService.replaceConfigState(cfg);
-            this.loadOrDisabledWatchers(cfg);
+        const replaceConfig = async (cfg: any) => {
+            await this.configService.replaceConfigState(cfg);
+            await this.loadOrDisabledWatchers(cfg);
         };
 
         if (config) {
-            replaceConfig(config);
+            await replaceConfig(config);
             ipcRenderer.send(
                 'appconfig',
                 JSON.stringify(this.configService.getConfig()),
             );
         }
 
-        ipcRenderer.on('config-data', (...args: any[]) => {
+        ipcRenderer.on('config-data', async (...args: any[]) => {
             const profiles = args[1];
-            replaceConfig(profiles.profiles[0]);
+            await replaceConfig(profiles.profiles[0]);
             this.configService.setConfig(profiles);
             this.$store.commit('message', Messages.success());
         });
@@ -137,11 +137,19 @@ export default class App extends Vue {
             },
         );
 
-        this.statsService = new StatsService(this.$store.state.connection.getClient());
-        const stats = await this.statsService.getStats();
-
-        this.$store.commit('etcdConfig', { version: parseFloat(stats.version) });
-        ipcRenderer.send('update-menu', undefined, { lease: this.$store.state.etcd.version > 3.2 });
+        // Only try to get stats if we have a valid connection
+        try {
+            const client = this.$store.state.connection.getClient();
+            if (client) {
+                this.statsService = new StatsService(client);
+                const stats = await this.statsService.getStats();
+                this.$store.commit('etcdConfig', { version: parseFloat(stats.version) });
+                ipcRenderer.send('update-menu', undefined, { lease: this.$store.state.etcd.version > 3.2 });
+            }
+        } catch (e) {
+            console.error('app.vue: Failed to get initial stats:', e);
+            // Connection will be established when user configures settings
+        }
     }
 }
 </script>

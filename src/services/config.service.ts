@@ -5,6 +5,23 @@ import { AuthService } from './auth.service';
 import { LocalStorageService } from './local-storage.service';
 import { GenericObject } from '../../types/index';
 
+// Helper to convert serialized Buffer objects from localStorage
+function toBuffer(data: any): Buffer {
+    if (data && typeof data === 'object' && data.type === 'Buffer' && Array.isArray(data.data)) {
+        return Buffer.from(data.data);
+    }
+    if (Array.isArray(data)) {
+        return Buffer.from(data);
+    }
+    if (Buffer.isBuffer(data)) {
+        return data;
+    }
+    if (typeof data === 'string') {
+        return Buffer.from(data);
+    }
+    return Buffer.from('');
+}
+
 export class ConfigService {
     constructor(private localStorageService: LocalStorageService) {}
 
@@ -84,24 +101,25 @@ export class ConfigService {
         }
 
         if (config.credentials && config.credentials.rootCertificate) {
-            config.credentials.rootCertificate = Buffer.from(
+            config.credentials.rootCertificate = toBuffer(
                 config.credentials.rootCertificate,
             );
             if (config.credentials.privateKey && config.credentials.certChain) {
-                config.credentials.privateKey = Buffer.from(
+                config.credentials.privateKey = toBuffer(
                     config.credentials.privateKey,
                 );
-                config.credentials.certChain = Buffer.from(
+                config.credentials.certChain = toBuffer(
                     config.credentials.certChain,
                 );
             }
         }
         if (config.etcd.hosts) {
             const auth = config.etcdAuth ? { auth: config.etcdAuth } : {};
+            const protocol = config.etcd.ssl?.enabled ? 'https://' : 'http://';
             store.commit('etcdConnect', {
                 ...omit(config.etcd, 'port'),
                 ...auth,
-                ...{ hosts: `${config.etcd.hosts}:${config.etcd.port}` },
+                ...{ hosts: `${protocol}${config.etcd.hosts}:${config.etcd.port}` },
                 ...{ credentials: config.credentials },
             });
         }

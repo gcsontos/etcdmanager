@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="open" persistent max-width="290">
+    <v-dialog :value="open" persistent max-width="290" @input="onDialogInput">
         <v-card dark>
             <v-toolbar dark flat>
                 <v-toolbar-title
@@ -44,20 +44,24 @@ import { Prop } from 'vue-property-decorator';
 import Dialog from '../lib/dialog.class';
 
 @Component({
-    name: 'delete-dialog',
+    name: 'save-as-dialog',
 })
 export default class SaveAsDialog extends Dialog {
-    // @ts-ignore
-    @Prop() open: boolean;
-    // @ts-ignore
-    @Prop() itemName: string;
-    // @ts-ignore TS2729
+    @Prop({ default: false }) open!: boolean;
+    @Prop({ default: '' }) itemName!: string;
 
-    public profile: string = this.itemName || '';
+    public profile: string = '';
 
     public submit(): SaveAsDialog {
         this.$emit('saveAs', this.profile);
+        this.profile = '';
         return this;
+    }
+
+    public onDialogInput(value: boolean): void {
+        if (!value) {
+            this.cancel();
+        }
     }
 }
 </script>

@@ -229,18 +229,18 @@ export default {
                             'Duration in milliseconds to wait while connecting before timing out. Defaults to 30 seconds.',
                     },
                     certificate: {
-                        label: 'Certificate',
-                        tooltip: 'Certificate used for SSL / TLS connections.',
+                        label: 'Certificate Authority',
+                        tooltip: 'Trusted CA certificate used to verify the server. Required for SSL / TLS connections.',
                     },
                     certKey: {
-                        label: 'Certificate key',
+                        label: 'Private key',
                         tooltip:
-                            'Key for the certificate, must be unencrypted. Needed only when client-certificate-auth is enabled in ETCD.',
+                            'Private key for the client certificate, must be unencrypted. Needed only when client-certificate-auth is enabled in ETCD.',
                     },
                     certChain: {
-                        label: 'Certificate Authority',
+                        label: 'Client certificate',
                         tooltip:
-                            'Trusted certificate authority. Needed only when client-certificate-auth is enabled in ETCD.',
+                            'Client certificate for mutual TLS authentication. Needed only when client-certificate-auth is enabled in ETCD.',
                     },
                     ssl: {
                         label: 'Secure connection',

@@ -232,17 +232,17 @@ export default {
                             'Az időtúllépés előtti várakozás időtartama ezredmásodpercben. Alapesetben 30 másodperc.',
                     },
                     certificate: {
-                        label: 'Tanusítvány',
-                        tooltip: ' A tanusítvány amelyet az SSL / TLS kommunikációhoz használunk.',
+                        label: 'Tanúsítvány hatóság',
+                        tooltip: 'Megbízható CA tanúsítvány a szerver ellenőrzéséhez. SSL / TLS kapcsolathoz szükséges.',
                     },
                     certKey: {
-                        label: 'Tanusítvány kulcs',
-                        tooltip: 'Az ügyféltanúsítvány kulcsa, nem titkosított. Csak akkor kell, ha az ETCD-ben be van kapcsolta a client certificatre auth.',
+                        label: 'Privát kulcs',
+                        tooltip: 'Az ügyféltanúsítvány privát kulcsa, nem titkosított. Csak akkor kell, ha az ETCD-ben be van kapcsolva a client certificate auth.',
                     },
                     certChain: {
-                        label: 'Tanusítvány hatóság',
+                        label: 'Ügyféltanúsítvány',
                         tooltip:
-                            'A megbízható hatóság certificate. Csak akkor kell, ha az ETCD-ben be van kapcsolta a client certificatre auth',
+                            'Ügyféltanúsítvány a kölcsönös TLS hitelesítéshez. Csak akkor kell, ha az ETCD-ben be van kapcsolva a client certificate auth.',
                     },
                     ssl: {
                         label: 'Biztonságos kommunikáció',

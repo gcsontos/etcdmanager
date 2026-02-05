@@ -1,5 +1,5 @@
 <template>
-    <v-dialog ref="dialog" v-model="open" dark scrollable full-width persistent>
+    <v-dialog ref="dialog" :value="open" dark scrollable full-width persistent @input="onDialogInput">
         <v-card dark>
             <v-toolbar dark flat>
                 <v-toolbar-title
@@ -44,8 +44,7 @@ const { ipcRenderer } = require('electron');
     name: 'whatsnew-dialog',
 })
 export default class WhatsNewDialog extends Dialog {
-    // @ts-ignore
-    @Prop() open: boolean;
+    @Prop({ default: false }) open!: boolean;
 
     public content: string = '';
     private localStorageService: LocalStorageService;
@@ -62,6 +61,12 @@ export default class WhatsNewDialog extends Dialog {
 
     hideNews() {
         this.localStorageService.set(`news${this.version}`, true);
+    }
+
+    public onDialogInput(value: boolean): void {
+        if (!value) {
+            this.cancel();
+        }
     }
 
     created() {

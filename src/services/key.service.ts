@@ -178,6 +178,6 @@ export default class KeyService extends EtcdService implements DataService {
     }
 
     public stats() {
-        return this.client.cluster.memberList();
+        return this.client.cluster.memberList({});
     }
 }

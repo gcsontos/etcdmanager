@@ -7,7 +7,7 @@ export default class StatsService extends EtcdService {
     }
 
     public listMembers() {
-        return this.client.cluster.memberList();
+        return this.client.cluster.memberList({});
     }
 
     public getAlarms(memberID: string) {

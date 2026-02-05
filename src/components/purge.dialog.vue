@@ -1,5 +1,5 @@
 <template>
-  <v-dialog ref="dialog" v-model="open" persistent max-width="290">
+  <v-dialog ref="dialog" :value="open" persistent max-width="290" @input="onDialogInput">
     <v-card dark>
       <v-toolbar dark flat>
         <v-toolbar-title data-test="purge-dialog.title.toolbar-title">{{ $t("purgeDialog.title") }}</v-toolbar-title>
@@ -23,10 +23,14 @@ import Dialog from '../lib/dialog.class';
     name: 'purge-dialog',
 })
 export default class PurgeDialog extends Dialog {
-    // @ts-ignore
-    @Prop() open: boolean;
-    // @ts-ignore
-    @Prop() itemName: string;
+    @Prop({ default: false }) open!: boolean;
+    @Prop({ default: '' }) itemName!: string;
+
+    public onDialogInput(value: boolean): void {
+        if (!value) {
+            this.cancel();
+        }
+    }
 }
 </script>
 

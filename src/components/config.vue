@@ -550,7 +550,6 @@
                                     <v-container v-if="ssl_enabled">
                                         <v-layout align-end row>
                                             <v-text-field
-                                                readonly
                                                 data-test="config.etcd-fields-certificate.text-field"
                                                 dark
                                                 ref="certificate"
@@ -566,7 +565,7 @@
                                                 "
                                                 required
                                                 @input="$v.timeout.$touch()"
-                                                @blur="$v.timeout.$touch()"
+                                                @blur="loadCertFromPath('cert')"
                                             >
                                                 <v-tooltip
                                                     slot="prepend"
@@ -630,7 +629,6 @@
                                         </v-layout>
                                         <v-layout align-end row>
                                             <v-text-field
-                                                readonly
                                                 data-test="config.etcd-fields-certKey.text-field"
                                                 dark
                                                 ref="certKey"
@@ -642,7 +640,7 @@
                                                     )
                                                 "
                                                 @input="$v.timeout.$touch()"
-                                                @blur="$v.timeout.$touch()"
+                                                @blur="loadCertFromPath('privateKey')"
                                             >
                                                 <v-tooltip
                                                     slot="prepend"
@@ -707,7 +705,6 @@
                                         </v-layout>
                                         <v-layout align-end row>
                                             <v-text-field
-                                                readonly
                                                 data-test="config.etcd-fields-certChain.text-field"
                                                 dark
                                                 ref="certChain"
@@ -719,7 +716,7 @@
                                                     )
                                                 "
                                                 @input="$v.timeout.$touch()"
-                                                @blur="$v.timeout.$touch()"
+                                                @blur="loadCertFromPath('certChain')"
                                             >
                                                 <v-tooltip
                                                     slot="prepend"
@@ -1298,7 +1295,9 @@ import {
 import { omit } from 'lodash-es';
 import { Etcd3, IOptions } from 'etcd3';
 import { writeFileSync } from 'fs';
+import { readFile, access, constants } from 'fs/promises';
 import Mousetrap from 'mousetrap';
+import { toBuffer } from '../lib/buffer-utils';
 import { InputActionService } from '../services/input-action.service';
 import { LocalStorageService } from '../services/local-storage.service';
 import { PlatformService } from '../services/platform.service';
@@ -1459,6 +1458,20 @@ export default class Configuration extends Vue {
 
         this.profiles = this.configService.getProfileNames();
         this.authService = new AuthService();
+
+        // Load certificate buffers from current profile if they exist
+        const currentProfile = this.$store.state.currentProfile;
+        if (currentProfile && currentProfile.credentials) {
+            if (currentProfile.credentials.rootCertificate) {
+                this.certification = toBuffer(currentProfile.credentials.rootCertificate);
+            }
+            if (currentProfile.credentials.privateKey) {
+                this.privateKey = toBuffer(currentProfile.credentials.privateKey);
+            }
+            if (currentProfile.credentials.certChain) {
+                this.certificationChain = toBuffer(currentProfile.credentials.certChain);
+            }
+        }
     }
 
     updated() {
@@ -1810,7 +1823,13 @@ export default class Configuration extends Vue {
     }
 
     public async testConnection() {
-        const config: IOptions = { hosts: `${this.endpoint}:${this.port}` };
+        // Ensure certificate files are loaded before testing
+        if (this.ssl_enabled && !(await this.ensureCertificatesLoaded())) {
+            return;
+        }
+
+        const protocol = this.ssl_enabled ? 'https://' : 'http://';
+        const config: IOptions = { hosts: `${protocol}${this.endpoint}:${this.port}` };
 
         if (this.username && this.password) {
             config.auth = {
@@ -1819,13 +1838,13 @@ export default class Configuration extends Vue {
             };
         }
 
-        if (this.certificate && this.ssl_enabled) {
+        if (this.ssl_enabled && this.certification.length > 0) {
             config.credentials = {
-                rootCertificate: this.certification,
+                rootCertificate: Buffer.from(this.certification),
             };
-            if (this.certKey && this.certChain) {
-                config.credentials.privateKey = this.privateKey;
-                config.credentials.certChain = this.certificationChain;
+            if (this.certKey && this.certChain && this.privateKey.length > 0 && this.certificationChain.length > 0) {
+                config.credentials.privateKey = Buffer.from(this.privateKey);
+                config.credentials.certChain = Buffer.from(this.certificationChain);
             }
         }
 
@@ -1852,11 +1871,22 @@ export default class Configuration extends Vue {
             this.noSelection = true;
             return;
         }
+        const profileData = this.configService.getProfile(this.profile);
         this.configService.loadProfile(this.profile);
-        this.$store.commit(
-            'updateCurrentProfile',
-            this.configService.getProfile(this.profile),
-        );
+        this.$store.commit('updateCurrentProfile', profileData);
+
+        // Load certificate buffers from profile
+        if (profileData && profileData.credentials) {
+            if (profileData.credentials.rootCertificate) {
+                this.certification = toBuffer(profileData.credentials.rootCertificate);
+            }
+            if (profileData.credentials.privateKey) {
+                this.privateKey = toBuffer(profileData.credentials.privateKey);
+            }
+            if (profileData.credentials.certChain) {
+                this.certificationChain = toBuffer(profileData.credentials.certChain);
+            }
+        }
 
         await this.updateCurrentEtcdVersion();
 
@@ -1927,6 +1957,57 @@ export default class Configuration extends Vue {
         this.certChain = '';
     }
 
+    public loadCertFromPath(id: string) {
+        let path = '';
+        if (id === 'cert') {
+            path = this.certificate;
+        } else if (id === 'privateKey') {
+            path = this.certKey;
+        } else if (id === 'certChain') {
+            path = this.certChain;
+        }
+        if (path && path.trim()) {
+            ipcRenderer.send('ssl_file_check', path.trim(), id);
+        }
+    }
+
+    private async ensureCertificatesLoaded(): Promise<boolean> {
+        // Load certificate files asynchronously if paths exist but buffers are empty
+        const fileExists = async (path: string): Promise<boolean> => {
+            try {
+                await access(path, constants.F_OK);
+                return true;
+            } catch {
+                return false;
+            }
+        };
+
+        try {
+            if (this.certificate && this.certification.length === 0) {
+                const certPath = this.certificate.trim();
+                if (await fileExists(certPath)) {
+                    this.certification = await readFile(certPath);
+                }
+            }
+            if (this.certKey && this.privateKey.length === 0) {
+                const keyPath = this.certKey.trim();
+                if (await fileExists(keyPath)) {
+                    this.privateKey = await readFile(keyPath);
+                }
+            }
+            if (this.certChain && this.certificationChain.length === 0) {
+                const chainPath = this.certChain.trim();
+                if (await fileExists(chainPath)) {
+                    this.certificationChain = await readFile(chainPath);
+                }
+            }
+            return true;
+        } catch (e) {
+            this.$store.commit('message', Messages.error(String(e)));
+            return false;
+        }
+    }
+
     private async updateCurrentEtcdVersion() {
         const statsService = new StatsService(
             this.$store.state.connection.getClient(),
@@ -1950,21 +2031,15 @@ export default class Configuration extends Vue {
             this.findError();
             return false;
         }
-        const config = this.configService.getConfig();
-        const credentials = config && config.credentials ? config.credentials : undefined;
-        if (credentials && Buffer.from(credentials.rootCertificate).length > 0) {
-            this.certification = Buffer.from(credentials.rootCertificate);
-            if (
-                credentials
-                && credentials.privateKey
-                && credentials.certChain
-                && Buffer.from(credentials.privateKey).length > 0
-                && Buffer.from(credentials.certChain).length > 0
-            ) {
-                this.privateKey = Buffer.from(credentials.privateKey);
-                this.certificationChain = Buffer.from(credentials.certChain);
-            }
+
+        // Ensure certificate files are loaded before saving
+        if (this.ssl_enabled && !(await this.ensureCertificatesLoaded())) {
+            return false;
         }
+
+        // Note: We use the in-memory certificate Buffers (this.certification, etc.)
+        // rather than loading from localStorage, as the in-memory versions are
+        // guaranteed to be proper Buffers, while localStorage versions are serialized JSON.
         const newConfig: { [key: string]: any } = {
             etcd: {
                 hosts: this.endpoint,
@@ -1998,18 +2073,19 @@ export default class Configuration extends Vue {
                 password: this.password,
             };
         }
-        if (this.certificate && this.ssl_enabled) {
+        if (this.certificate && this.ssl_enabled && this.certification.length > 0) {
             newConfig.etcd.ssl.certificate = this.certificate;
             newConfig.etcd.ssl.enabled = this.ssl_enabled;
+            // Ensure credentials are proper Buffers (consistent with testConnection)
             newConfig.credentials = {
-                rootCertificate: this.certification,
+                rootCertificate: Buffer.from(this.certification),
             };
-            if (this.certKey && this.certChain) {
+            if (this.certKey && this.certChain && this.privateKey.length > 0 && this.certificationChain.length > 0) {
                 newConfig.etcd.ssl.certKey = this.certKey;
                 newConfig.etcd.ssl.certChain = this.certChain;
 
-                newConfig.credentials.privateKey = this.privateKey;
-                newConfig.credentials.certChain = this.certificationChain;
+                newConfig.credentials.privateKey = Buffer.from(this.privateKey);
+                newConfig.credentials.certChain = Buffer.from(this.certificationChain);
             }
         }
         if (this.pwpattern) {
@@ -2035,8 +2111,6 @@ export default class Configuration extends Vue {
         }
 
         try {
-            const isRoot = await this.authService.isRoot();
-
             // @ts-ignore
             this.configService.setConfig({
                 profiles: [...oldConfig.profiles],
@@ -2045,14 +2119,21 @@ export default class Configuration extends Vue {
             this.profiles = this.configService.getProfileNames();
             this.profile = newConfig.config.name;
             const auth = newConfig.etcdAuth ? { auth: newConfig.etcdAuth } : {};
+            const protocol = newConfig.etcd.ssl?.enabled ? 'https://' : 'http://';
+
+            // Commit the new connection FIRST with fresh Buffer credentials
             this.$store.commit('etcdConnect', {
                 ...omit(newConfig.etcd, 'port'),
                 ...auth,
-                ...{ hosts: `${newConfig.etcd.hosts}:${newConfig.etcd.port}` },
+                ...{ hosts: `${protocol}${newConfig.etcd.hosts}:${newConfig.etcd.port}` },
                 ...{ credentials: newConfig.credentials },
             });
 
             await this.updateCurrentEtcdVersion();
+
+            // Refresh authService client to use the new connection, then check root status
+            this.authService.updateClient();
+            const isRoot = await this.authService.isRoot();
 
             this.$store.commit(
                 'limited',

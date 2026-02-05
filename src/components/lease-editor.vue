@@ -25,7 +25,7 @@
                 <template v-slot:header>
                     <v-toolbar-title
                         data-test="lease-editor.title.toolbar-title"
-                        >{{  $t('leaseEditor.title')  }}: {{id}}</v-toolbar-title
+                        >{{  $t('leaseEditor.title')  }}: {{hexId}}</v-toolbar-title
                     >
                 </template>
                 <v-tabs
@@ -270,11 +270,9 @@
 import Component from 'vue-class-component';
 import { ILeaseTimeToLiveResponse } from 'etcd3';
 import { required, numeric } from 'vuelidate/lib/validators';
-import Messages from '@/lib/messages';
 import { Prop } from 'vue-property-decorator';
 import moment from 'moment';
 import { BaseEditor } from '../lib/editor.class';
-import LeaseService from '../services/lease.service';
 import { GenericObject } from '../../types';
 
 // @ts-ignore
@@ -305,35 +303,36 @@ export default class LeaseEditor extends BaseEditor {
     };
     // @ts-ignore TS2729
 
-    public id: string = this.data?.ID || '';
-
     public keys: GenericObject[] = [];
     private remaining: number = 0;
     // @ts-ignore
     private remainingDate: string = '';
-    private leaseService: LeaseService;
     private interval: any = null;
-    public lease: ILeaseTimeToLiveResponse | GenericObject = {};
 
-    constructor() {
-        super();
-        this.leaseService = new LeaseService(
-            this.$store.state.connection.getClient(),
-        );
+    // Get ID from prop (available after component is mounted)
+    public get id(): string {
+        return this.data?.ID || '';
     }
 
-    public async mounted() {
+    public get hexId(): string {
+        return this.id ? BigInt(this.id).toString(16) : '';
+    }
+
+    // Use data passed from lease-manager (already contains lease info)
+    public get lease(): ILeaseTimeToLiveResponse | GenericObject {
+        return this.data || {};
+    }
+
+    public mounted() {
         this.bindDefaultEvents('leaseForm');
-        try {
-            this.lease = await this.leaseService.loadLease(this.id);
-        } catch (error) {
-            this.$store.commit('message', Messages.error(String(error)));
+        // Use data from prop - lease-manager already loaded it
+        if (this.lease.keys) {
+            this.keys = this.lease.keys.map((key: Buffer) => ({ name: key.toString() }));
         }
-        this.keys = this.lease.keys.map((key: Buffer) => ({ name: key.toString() }));
-        this.remaining = this.lease.TTL;
+        this.remaining = Number(this.lease.TTL) || 0;
         const now = moment();
         this.interval = setInterval(() => {
-            this.remaining = this.remaining -= 1;
+            this.remaining -= 1;
             const minutes = moment(now).diff(
                 moment(now).subtract(this.remaining, 'seconds'),
                 'minutes',

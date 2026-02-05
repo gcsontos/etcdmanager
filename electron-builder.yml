@@ -26,7 +26,7 @@ files:
   - "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
 
 extraResources:
-  - from: node_modules/etcd3/lib/proto
+  - from: node_modules/etcd3/proto
     to: proto
   - from: public
     to: public

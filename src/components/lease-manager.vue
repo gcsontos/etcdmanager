@@ -323,7 +323,7 @@
                                 hide-details
                             ></v-checkbox>
                         </td>
-                        <td>{{ props.item.ID }}</td>
+                        <td>{{ toHexId(props.item.ID) }}</td>
                         <td
                             data-test="lease-manager.actions.td"
                             class="justify-center layout px-0"
@@ -510,6 +510,11 @@ export default class LeaseManager extends CrudBase implements List {
         }
 
         return Promise.resolve(this);
+    }
+
+    public toHexId(decimalId: string): string {
+        // Convert decimal string to hex format (matching etcdctl output)
+        return BigInt(decimalId).toString(16);
     }
 }
 </script>

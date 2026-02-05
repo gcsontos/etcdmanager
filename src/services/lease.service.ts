@@ -1,6 +1,7 @@
 import {
     Etcd3, ILeaseTimeToLiveResponse, ILeaseRevokeResponse,
 } from 'etcd3';
+import Long from 'long';
 import { GenericObject } from '../../types/index';
 import EtcdService from './etcd.service';
 
@@ -16,8 +17,9 @@ export default class LeaseService extends EtcdService {
 
     public async loadLease(leaseId: string): Promise<ILeaseTimeToLiveResponse> {
         try {
+            // Use Long for proper int64 serialization
             const res = await this.client.leaseClient.leaseTimeToLive({
-                ID: leaseId,
+                ID: Long.fromString(String(leaseId)),
                 keys: true,
             });
             return Promise.resolve(res);
@@ -28,11 +30,11 @@ export default class LeaseService extends EtcdService {
 
     public async purge(): Promise<ILeaseRevokeResponse[]> {
         try {
-            const roles = await this.getLeases();
+            const leases = await this.getLeases();
             const promises: Promise<ILeaseRevokeResponse>[] = [];
-            roles.forEach((lease) => {
+            leases.forEach((lease) => {
                 promises.push(this.client.leaseClient.leaseRevoke({
-                    ID: lease.ID,
+                    ID: Long.fromString(lease.ID),
                 }));
             });
             return Promise.all(promises);
@@ -41,11 +43,11 @@ export default class LeaseService extends EtcdService {
         }
     }
 
-    public remove(leaseIds: number[]): Promise<ILeaseRevokeResponse[]> {
+    public remove(leaseIds: string[]): Promise<ILeaseRevokeResponse[]> {
         const promises: Promise<ILeaseRevokeResponse>[] = [];
         leaseIds.forEach((leaseId) => {
             promises.push(this.client.leaseClient.leaseRevoke({
-                ID: leaseId,
+                ID: Long.fromString(leaseId),
             }));
         });
         return Promise.all(promises);

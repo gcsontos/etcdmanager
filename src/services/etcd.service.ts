@@ -2,23 +2,7 @@ import {
     Etcd3,
     IOptions,
 } from 'etcd3';
-
-// Helper to convert serialized Buffer objects from localStorage
-function toBuffer(data: any): Buffer {
-    if (data && typeof data === 'object' && data.type === 'Buffer' && Array.isArray(data.data)) {
-        return Buffer.from(data.data);
-    }
-    if (Array.isArray(data)) {
-        return Buffer.from(data);
-    }
-    if (Buffer.isBuffer(data)) {
-        return data;
-    }
-    if (typeof data === 'string') {
-        return Buffer.from(data);
-    }
-    return Buffer.from('');
-}
+import { toBuffer } from '@/lib/buffer-utils';
 
 export default class EtcdService {
     protected client: any = null;

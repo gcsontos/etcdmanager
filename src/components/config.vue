@@ -1294,8 +1294,10 @@ import {
 } from 'vuelidate/lib/validators';
 import { omit } from 'lodash-es';
 import { Etcd3, IOptions } from 'etcd3';
-import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { writeFileSync } from 'fs';
+import { readFile, access, constants } from 'fs/promises';
 import Mousetrap from 'mousetrap';
+import { toBuffer } from '../lib/buffer-utils';
 import { InputActionService } from '../services/input-action.service';
 import { LocalStorageService } from '../services/local-storage.service';
 import { PlatformService } from '../services/platform.service';
@@ -1461,13 +1463,13 @@ export default class Configuration extends Vue {
         const currentProfile = this.$store.state.currentProfile;
         if (currentProfile && currentProfile.credentials) {
             if (currentProfile.credentials.rootCertificate) {
-                this.certification = this.toBuffer(currentProfile.credentials.rootCertificate);
+                this.certification = toBuffer(currentProfile.credentials.rootCertificate);
             }
             if (currentProfile.credentials.privateKey) {
-                this.privateKey = this.toBuffer(currentProfile.credentials.privateKey);
+                this.privateKey = toBuffer(currentProfile.credentials.privateKey);
             }
             if (currentProfile.credentials.certChain) {
-                this.certificationChain = this.toBuffer(currentProfile.credentials.certChain);
+                this.certificationChain = toBuffer(currentProfile.credentials.certChain);
             }
         }
     }
@@ -1822,7 +1824,7 @@ export default class Configuration extends Vue {
 
     public async testConnection() {
         // Ensure certificate files are loaded before testing
-        if (this.ssl_enabled && !this.ensureCertificatesLoaded()) {
+        if (this.ssl_enabled && !(await this.ensureCertificatesLoaded())) {
             return;
         }
 
@@ -1876,13 +1878,13 @@ export default class Configuration extends Vue {
         // Load certificate buffers from profile
         if (profileData && profileData.credentials) {
             if (profileData.credentials.rootCertificate) {
-                this.certification = this.toBuffer(profileData.credentials.rootCertificate);
+                this.certification = toBuffer(profileData.credentials.rootCertificate);
             }
             if (profileData.credentials.privateKey) {
-                this.privateKey = this.toBuffer(profileData.credentials.privateKey);
+                this.privateKey = toBuffer(profileData.credentials.privateKey);
             }
             if (profileData.credentials.certChain) {
-                this.certificationChain = this.toBuffer(profileData.credentials.certChain);
+                this.certificationChain = toBuffer(profileData.credentials.certChain);
             }
         }
 
@@ -1955,27 +1957,6 @@ export default class Configuration extends Vue {
         this.certChain = '';
     }
 
-    private toBuffer(data: any): Buffer {
-        // Handle serialized Buffer objects from localStorage (e.g., {type: "Buffer", data: [...]})
-        if (data && typeof data === 'object' && data.type === 'Buffer' && Array.isArray(data.data)) {
-            return Buffer.from(data.data);
-        }
-        // Handle arrays directly
-        if (Array.isArray(data)) {
-            return Buffer.from(data);
-        }
-        // Handle Buffer instances
-        if (Buffer.isBuffer(data)) {
-            return data;
-        }
-        // Handle strings
-        if (typeof data === 'string') {
-            return Buffer.from(data);
-        }
-        // Fallback
-        return Buffer.from('');
-    }
-
     public loadCertFromPath(id: string) {
         let path = '';
         if (id === 'cert') {
@@ -1990,25 +1971,34 @@ export default class Configuration extends Vue {
         }
     }
 
-    private ensureCertificatesLoaded(): boolean {
-        // Load certificate files synchronously if paths exist but buffers are empty
+    private async ensureCertificatesLoaded(): Promise<boolean> {
+        // Load certificate files asynchronously if paths exist but buffers are empty
+        const fileExists = async (path: string): Promise<boolean> => {
+            try {
+                await access(path, constants.F_OK);
+                return true;
+            } catch {
+                return false;
+            }
+        };
+
         try {
             if (this.certificate && this.certification.length === 0) {
                 const certPath = this.certificate.trim();
-                if (existsSync(certPath)) {
-                    this.certification = readFileSync(certPath);
+                if (await fileExists(certPath)) {
+                    this.certification = await readFile(certPath);
                 }
             }
             if (this.certKey && this.privateKey.length === 0) {
                 const keyPath = this.certKey.trim();
-                if (existsSync(keyPath)) {
-                    this.privateKey = readFileSync(keyPath);
+                if (await fileExists(keyPath)) {
+                    this.privateKey = await readFile(keyPath);
                 }
             }
             if (this.certChain && this.certificationChain.length === 0) {
                 const chainPath = this.certChain.trim();
-                if (existsSync(chainPath)) {
-                    this.certificationChain = readFileSync(chainPath);
+                if (await fileExists(chainPath)) {
+                    this.certificationChain = await readFile(chainPath);
                 }
             }
             return true;
@@ -2043,7 +2033,7 @@ export default class Configuration extends Vue {
         }
 
         // Ensure certificate files are loaded before saving
-        if (this.ssl_enabled && !this.ensureCertificatesLoaded()) {
+        if (this.ssl_enabled && !(await this.ensureCertificatesLoaded())) {
             return false;
         }
 

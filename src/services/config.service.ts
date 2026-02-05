@@ -1,26 +1,10 @@
 import store from '@/store';
 import { omit } from 'lodash-es';
 import { ipcRenderer } from 'electron';
+import { toBuffer } from '@/lib/buffer-utils';
 import { AuthService } from './auth.service';
 import { LocalStorageService } from './local-storage.service';
 import { GenericObject } from '../../types/index';
-
-// Helper to convert serialized Buffer objects from localStorage
-function toBuffer(data: any): Buffer {
-    if (data && typeof data === 'object' && data.type === 'Buffer' && Array.isArray(data.data)) {
-        return Buffer.from(data.data);
-    }
-    if (Array.isArray(data)) {
-        return Buffer.from(data);
-    }
-    if (Buffer.isBuffer(data)) {
-        return data;
-    }
-    if (typeof data === 'string') {
-        return Buffer.from(data);
-    }
-    return Buffer.from('');
-}
 
 export class ConfigService {
     constructor(private localStorageService: LocalStorageService) {}

@@ -28,12 +28,12 @@ files:
 extraResources:
   - from: node_modules/etcd3/lib/proto
     to: proto
-
-extraFiles:
   - from: public
     to: public
     filter:
       - "**/*"
+
+extraFiles:
   - from: node_modules/protobufjs/google/protobuf
     to: node_modules/protobufjs/dist/google/protobuf
 

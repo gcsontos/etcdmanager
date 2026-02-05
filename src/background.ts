@@ -40,7 +40,7 @@ const pkg = JSON.parse(
         ),
     ).toString(),
 );
-const isDevelopment = process.env.NODE_ENV !== 'production';
+const isDevelopment = !app.isPackaged;
 const isMac = process.platform === 'darwin';
 let menu: Menu | null = null;
 
